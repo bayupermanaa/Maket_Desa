@@ -7,6 +7,24 @@ use App\Models\PengajuanSurat;
 
 class PengajuanSuratController extends Controller
 {
+    private function routePrefix(): string
+    {
+        return request()->routeIs('kepala.*') ? 'kepala' : 'admin';
+    }
+
+    private function validatePengajuanSurat(Request $request): array
+    {
+        return $request->validate([
+            'nama' => 'required|string|max:255',
+            'nik' => 'required|string|max:20',
+            'jenis_surat' => 'required|string|max:100',
+            'keperluan' => 'required|string',
+            'no_hp' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+        ]);
+    }
+
     /**
      * Tampilkan daftar semua pengajuan surat (ADMIN)
      */
@@ -30,15 +48,48 @@ class PengajuanSuratController extends Controller
      */
     public function store(Request $request)
     {
+        $validated = $this->validatePengajuanSurat($request);
+
         PengajuanSurat::create([
-            'nama' => $request->nama,
-            'jenis_surat' => $request->jenis_surat,
-            'keterangan' => $request->keterangan,
-            'status' => 'Menunggu',
+            'nama' => $validated['nama'],
+            'nik' => $validated['nik'],
+            'jenis_surat' => $validated['jenis_surat'],
+            'keperluan' => $validated['keperluan'],
+            'no_hp' => $validated['no_hp'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'keterangan' => $validated['keterangan'] ?? null,
+            'status' => PengajuanSurat::STATUS_MENUNGGU,
         ]);
 
-        return redirect()->route('admin.pengajuan-surat.index')
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
             ->with('success', 'Pengajuan surat berhasil ditambahkan.');
+    }
+
+    /**
+     * Simpan pengajuan surat oleh masyarakat dari dashboard masyarakat.
+     */
+    public function storeMasyarakat(Request $request)
+    {
+        if (!auth()->check() || auth()->user()->role !== 'masyarakat') {
+            abort(403);
+        }
+
+        $validated = $this->validatePengajuanSurat($request);
+
+        PengajuanSurat::create([
+            'nama' => $validated['nama'],
+            'nik' => $validated['nik'],
+            'jenis_surat' => $validated['jenis_surat'],
+            'keperluan' => $validated['keperluan'],
+            'no_hp' => $validated['no_hp'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'keterangan' => $validated['keterangan'] ?? null,
+            'status' => PengajuanSurat::STATUS_MENUNGGU,
+        ]);
+
+        return redirect()
+            ->route('dashboard.masyarakat', ['tab' => 'pengajuan'])
+            ->with('success', 'Pengajuan surat berhasil dikirim. Silakan pantau di menu Status Pengajuan Surat.');
     }
 
     /**
@@ -64,15 +115,21 @@ class PengajuanSuratController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validated = $this->validatePengajuanSurat($request);
+
         $surat = PengajuanSurat::findOrFail($id);
 
         $surat->update([
-            'nama' => $request->nama,
-            'jenis_surat' => $request->jenis_surat,
-            'keterangan' => $request->keterangan,
+            'nama' => $validated['nama'],
+            'nik' => $validated['nik'],
+            'jenis_surat' => $validated['jenis_surat'],
+            'keperluan' => $validated['keperluan'],
+            'no_hp' => $validated['no_hp'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'keterangan' => $validated['keterangan'] ?? null,
         ]);
 
-        return redirect()->route('admin.pengajuan-surat.index')
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
             ->with('success', 'Pengajuan surat berhasil diupdate.');
     }
 
@@ -84,7 +141,7 @@ class PengajuanSuratController extends Controller
         $surat = PengajuanSurat::findOrFail($id);
         $surat->delete();
 
-        return redirect()->route('admin.pengajuan-surat.index')
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
             ->with('success', 'Pengajuan surat berhasil dihapus.');
     }
 
@@ -98,10 +155,10 @@ class PengajuanSuratController extends Controller
     public function setujui($id)
     {
         $surat = PengajuanSurat::findOrFail($id);
-        $surat->status = 'Disetujui';
+        $surat->status = PengajuanSurat::STATUS_DISETUJUI;
         $surat->save();
 
-        return redirect()->route('admin.pengajuan-surat.index')
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
             ->with('success', 'Pengajuan surat berhasil disetujui.');
     }
 
@@ -111,10 +168,10 @@ class PengajuanSuratController extends Controller
     public function tolak($id)
     {
         $surat = PengajuanSurat::findOrFail($id);
-        $surat->status = 'Ditolak';
+        $surat->status = PengajuanSurat::STATUS_DITOLAK;
         $surat->save();
 
-        return redirect()->route('admin.pengajuan-surat.index')
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
             ->with('success', 'Pengajuan surat berhasil ditolak.');
     }
 }

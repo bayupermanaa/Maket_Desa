@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -35,4 +36,14 @@ class User extends Authenticatable
     public function isMasyarakat() { return $this->role === 'masyarakat'; }
     public function isAdmin()      { return $this->role === 'admin_desa'; }
     public function isKepalaDesa() { return $this->role === 'kepala_desa'; }
+
+    public function pengaduans(): HasMany
+    {
+        return $this->hasMany(Pengaduan::class, 'nik', 'nik');
+    }
+
+    public function pengajuanSurats(): HasMany
+    {
+        return $this->hasMany(PengajuanSurat::class, 'nik', 'nik');
+    }
 }

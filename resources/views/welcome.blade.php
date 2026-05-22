@@ -5,14 +5,19 @@
         <div class="container mx-auto px-6 lg:px-8 relative z-10">
             <div class="flex flex-col md:flex-row items-center justify-center gap-12">
                 
-                <!-- Lingkaran Logo -->
+                <!-- Lingkaran Logo Desa -->
                 <div class="flex-shrink-0">
-                    <img 
-                        src="{{ asset('images/logo-desa.png') }}" 
-                        alt="Logo Desa Maket" 
-                        class="w-52 h-52 rounded-full shadow-2xl border-4 border-white/30 object-cover"
-                        onerror="this.src='https://via.placeholder.com/208/92400e/ffffff?text=Logo+Maket'"
-                    >
+                    <div class="w-64 h-64 md:w-72 md:h-72 rounded-full p-[6px] bg-gradient-to-br from-slate-100 via-white to-slate-300 shadow-[0_20px_55px_rgba(0,0,0,0.40)] border-4 border-black">
+                        <div class="w-full h-full rounded-full bg-gradient-to-b from-white to-slate-100 border-2 border-black p-5 md:p-6 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.5),transparent_48%)]"></div>
+                            <img 
+                                src="{{ asset('images/LOGO DESA.png') }}" 
+                                alt="Logo Desa Maket" 
+                                class="w-full h-full object-contain drop-shadow-[0_10px_16px_rgba(0,0,0,0.28)]"
+                                onerror="this.src='https://via.placeholder.com/208/92400e/ffffff?text=Logo+Maket'; this.onerror=null;"
+                            >
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Teks Selamat Datang -->

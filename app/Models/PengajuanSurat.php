@@ -3,11 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 
 class PengajuanSurat extends Model
 {
     use HasFactory;
+
+    public const STATUS_MENUNGGU = 'Menunggu';
+    public const STATUS_DIPROSES = 'Diproses';
+    public const STATUS_DISETUJUI = 'Disetujui';
+    public const STATUS_DITOLAK = 'Ditolak';
 
     protected $table = 'pengajuan_surats';
 
@@ -28,25 +34,8 @@ class PengajuanSurat extends Model
         'updated_at' => 'datetime',
     ];
 
-    // ADMIN MENYETUJUI SURAT
-public function setujui($id)
-{
-    $surat = PengajuanSurat::findOrFail($id);
-    $surat->update([
-        'status' => 'Disetujui'
-    ]);
-
-    return back()->with('success', 'Pengajuan berhasil disetujui');
-}
-
-// ADMIN MENOLAK SURAT
-public function tolak($id)
-{
-    $surat = PengajuanSurat::findOrFail($id);
-    $surat->update([
-        'status' => 'Ditolak'
-    ]);
-
-    return back()->with('success', 'Pengajuan berhasil ditolak');
-}
+    public function penduduk(): BelongsTo
+    {
+        return $this->belongsTo(Penduduk::class, 'nik', 'nik');
+    }
 }

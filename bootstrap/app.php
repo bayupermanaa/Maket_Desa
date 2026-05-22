@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'admin.role' => \App\Http\Middleware\EnsureAdminRole::class,
+            'kepala.role' => \App\Http\Middleware\EnsureKepalaDesaRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

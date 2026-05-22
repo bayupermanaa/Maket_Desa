@@ -11,24 +11,31 @@ class LoginController extends Controller
     public function loginMasyarakat(Request $request)
     {
         $request->validate([
-            'nik_email' => 'required|string',
-            'password'  => 'required|string',
+            'nik' => 'required|string',
+            'password' => 'required|string',
         ]);
 
         $credentials = [
-            filter_var($request->nik_email, FILTER_VALIDATE_EMAIL) ? 'email' : 'nik' => $request->nik_email,
+            'nik' => $request->nik,
             'password' => $request->password,
         ];
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             if ($user->role === 'masyarakat') {
-                return redirect('/dashboard')->with('success', 'Selamat datang, Warga Desa Makét!');
+                session([
+                    'role' => 'masyarakat',
+                    'user_name' => $user->name,
+                ]);
+
+                return redirect()->route('dashboard.masyarakat')->with('success', 'Selamat datang, Warga Desa Maket!');
             }
+
+            Auth::logout();
         }
 
         return back()->withErrors([
-            'nik_email' => 'NIK/Email atau password salah.',
+            'nik' => 'NIK atau password salah.',
         ]);
     }
 
@@ -40,7 +47,17 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt(['email' => $request->username, 'password' => $request->password])) {
-            return redirect('/dashboard')->with('success', 'Selamat datang, Admin Desa!');
+            $user = Auth::user();
+            if ($user->role === 'admin_desa') {
+                session([
+                    'role' => 'admin_desa',
+                    'user_name' => $user->name,
+                ]);
+
+                return redirect()->route('admin.dashboard')->with('success', 'Selamat datang, Admin Desa!');
+            }
+
+            Auth::logout();
         }
 
         return back()->withErrors(['username' => 'Username atau password salah.']);
@@ -54,7 +71,17 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt(['email' => $request->username, 'password' => $request->password])) {
-            return redirect('/dashboard')->with('success', 'Selamat datang, Bapak Kepala Desa!');
+            $user = Auth::user();
+            if ($user->role === 'kepala_desa') {
+                session([
+                    'role' => 'kepala_desa',
+                    'user_name' => $user->name,
+                ]);
+
+                return redirect()->route('kepala.dashboard')->with('success', 'Selamat datang, Bapak/Ibu Kepala Desa!');
+            }
+
+            Auth::logout();
         }
 
         return back()->withErrors(['username' => 'Username atau password salah.']);

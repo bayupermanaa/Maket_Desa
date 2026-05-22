@@ -46,7 +46,7 @@
             @if($aparatur->foto)
                 <div>
                     <p class="text-sm text-gray-600 mb-2">Foto Saat Ini</p>
-                    <img src="{{ asset('storage/' . $aparatur->foto) }}" class="w-28 h-28 rounded-xl object-cover border">
+                    <img src="{{ \Illuminate\Support\Str::startsWith($aparatur->foto, 'images/') ? asset($aparatur->foto) : asset('images/logo.png') }}" class="w-28 h-28 rounded-xl object-cover border">
                 </div>
             @endif
 

@@ -2,60 +2,7 @@
     <x-slot name="title">CMS Dashboard Desa</x-slot>
     
     <div class="min-h-screen bg-gray-100 flex">
-        <aside class="w-72 bg-gray-900 text-white min-h-screen p-6 flex-shrink-0">
-             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 mb-10">
-                    <div class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-                        <img src="{{ asset('storage/images/logo.png') }}" alt="Logo Desa" class="w-full h-full object-contain">
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-semibold">Desa Maket</h1>
-                        <p class="text-xs text-gray-400">Admin Panel</p>
-                    </div>
-                </a>
-
-            <nav class="space-y-1">
-                <a href="{{ route('admin.dashboard') }}"
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.dashboard') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    🏠 Dashboard
-                </a>
-
-                <a href="/admin/data-penduduk" 
-                    class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 text-gray-300 hover:text-white transition-all {{ request()->is('admin/data-penduduk*') ? 'bg-gray-800 text-white' : '' }}">
-                    <span class="text-2xl">👥</span>
-                    <span class="font-medium">Data Penduduk</span>
-                </a>
-
-                <a href="{{ route('admin.pengajuan-surat.index') }}"
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.pengajuan-surat.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    📄 Pengajuan Surat
-                </a>
-
-                 <a href="{{ route('admin.pengaduan') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('admin.pengaduan') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    📢 Pengaduan Masyarakat
-                </a>
-
-                <a href="#"
-                   class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    📊 Laporan & Statistik
-                </a>
-
-                <a href="#"
-                   class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    💰 Keuangan Desa
-                </a>
-
-                <a href="{{ route('admin.aparatur-desa.index') }}"
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.aparatur-desa.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    🏛️ Aparatur Desa
-                </a>
-
-                <a href="{{ route('admin.settings-desa.edit') }}"
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.settings-desa.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    ⚙️ CMS Dashboard Desa
-                </a>
-            </nav>
-        </aside>
+        @include('admin.partials.sidebar')
 
         <div class="flex-1 p-8 lg:p-12 bg-gray-50">
             <h1 class="text-3xl font-bold mb-8">⚙️ Pengaturan Desa</h1>
@@ -176,7 +123,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="font-medium">Nama Kepala Desa</label>
-                            <input type="text" name="kepala_desa_nama" value="{{ old('kepala_desa_nama', $data->kepala_desa_nama ?? '') }}"
+                            <input type="text" name="kepala_desa_nama" value="{{ old('kepala_desa_nama', $data->nama_kepala_desa ?? '') }}"
                                    class="w-full mt-2 border rounded-xl p-3">
                         </div>
 
@@ -203,9 +150,9 @@
                     @if(!empty($data->kepala_desa_foto))
                         <div class="mt-4">
                             <p class="text-sm text-gray-600 mb-2">Preview Foto Kepala Desa:</p>
-                            <img src="{{ asset('storage/' . $data->kepala_desa_foto) }}"
-                                 alt="Kepala Desa"
-                                 class="w-32 h-32 object-cover rounded-2xl border shadow">
+                            <img src="{{ \Illuminate\Support\Str::startsWith($data->kepala_desa_foto, ['http://', 'https://']) ? $data->kepala_desa_foto : ( \Illuminate\Support\Str::startsWith($data->kepala_desa_foto, 'images/') ? asset($data->kepala_desa_foto) : asset('storage/' . $data->kepala_desa_foto) ) }}"
+                                  alt="Kepala Desa"
+                                  class="w-32 h-32 object-cover rounded-2xl border shadow">
                         </div>
                     @endif
                 </div>
@@ -298,3 +245,6 @@ document.addEventListener('DOMContentLoaded', function() {
     input.addEventListener('paste', () => setTimeout(updatePreview, 50));
 });
 </script>
+
+
+

@@ -26,14 +26,31 @@ class ArtikelController extends Controller
     $request->validate([
         'judul' => 'required|string|max:255',
         'isi'   => 'required',
+        'gambar'=> 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
-    \App\Models\Artikel::create([
+    $data = [
         'judul'        => $request->judul,
         'slug'         => \Illuminate\Support\Str::slug($request->judul),
         'isi'          => $request->isi,
         'is_published' => true,
-    ]);
+    ];
+
+    if ($request->hasFile('gambar')) {
+        $file = $request->file('gambar');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $filename = 'artikel-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+
+        $destDir = public_path('artikel');
+        if (!is_dir($destDir)) {
+            @mkdir($destDir, 0775, true);
+        }
+
+        $file->move($destDir, $filename);
+        $data['gambar'] = 'artikel/' . $filename;
+    }
+
+    \App\Models\Artikel::create($data);
 
     return redirect()->route('admin.artikel.index')
                      ->with('success', 'Artikel berhasil ditambahkan!');
@@ -56,10 +73,29 @@ class ArtikelController extends Controller
         $data['slug'] = Str::slug($request->judul);
 
         if ($request->hasFile('gambar')) {
-            if ($artikel->gambar) {
-                Storage::delete('public/' . $artikel->gambar);
+            if (!empty($artikel->gambar)) {
+                if (Str::startsWith($artikel->gambar, 'artikel/')) {
+                    $oldPath = public_path($artikel->gambar);
+                    if (is_file($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                } else {
+                    // Backward-compat: dulu sempat disimpan di storage/public
+                    Storage::disk('public')->delete($artikel->gambar);
+                }
             }
-            $data['gambar'] = $request->file('gambar')->store('artikel', 'public');
+
+            $file = $request->file('gambar');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+            $filename = 'artikel-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+
+            $destDir = public_path('artikel');
+            if (!is_dir($destDir)) {
+                @mkdir($destDir, 0775, true);
+            }
+
+            $file->move($destDir, $filename);
+            $data['gambar'] = 'artikel/' . $filename;
         }
 
         $artikel->update($data);
@@ -70,8 +106,16 @@ class ArtikelController extends Controller
 
     public function destroy(Artikel $artikel)
     {
-        if ($artikel->gambar) {
-            Storage::delete('public/' . $artikel->gambar);
+        if (!empty($artikel->gambar)) {
+            if (Str::startsWith($artikel->gambar, 'artikel/')) {
+                $path = public_path($artikel->gambar);
+                if (is_file($path)) {
+                    @unlink($path);
+                }
+            } else {
+                // Backward-compat: dulu sempat disimpan di storage/public
+                Storage::disk('public')->delete($artikel->gambar);
+            }
         }
         $artikel->delete();
 

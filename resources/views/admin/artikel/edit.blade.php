@@ -17,7 +17,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Gambar Saat Ini</label>
                     @if($artikel->gambar)
-                        <img src="{{ asset('storage/' . $artikel->gambar) }}" 
+                        <img src="{{ \Illuminate\Support\Str::startsWith($artikel->gambar, 'artikel/') ? asset($artikel->gambar) : asset('storage/' . $artikel->gambar) }}" 
                              alt="" class="w-48 h-32 object-cover rounded-2xl mb-3">
                     @endif
                     <input type="file" name="gambar" accept="image/*"
@@ -41,6 +41,12 @@
                        class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-8 py-3 rounded-2xl font-medium">
                         Batal
                     </a>
+
+                <a href="{{ route('admin.berita.index') }}"
+                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.berita.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
+                    <span class="text-2xl">???</span>
+                    <span class="font-medium">Berita Desa</span>
+                </a>
                 </div>
             </div>
         </form>

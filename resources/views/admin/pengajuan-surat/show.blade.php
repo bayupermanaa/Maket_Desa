@@ -1,5 +1,6 @@
 <x-app-layout>
     <x-slot name="title">Detail Pengajuan Surat</x-slot>
+@php($routePrefix = request()->routeIs('kepala.*') ? 'kepala' : 'admin')
 
 <div class="min-h-screen bg-gray-100 flex">
 
@@ -79,7 +80,7 @@
 
                 <!-- FORM KETERANGAN PENOLAKAN -->
                 @if($surat->status == 'Menunggu' || $surat->status == 'Diproses')
-                <form action="{{ route('admin.pengajuan-surat.tolak', $surat->id) }}" method="POST">
+                <form action="{{ route($routePrefix . '.pengajuan-surat.tolak', $surat->id) }}" method="POST">
                     @csrf
                     @method('PATCH')
 
@@ -90,7 +91,7 @@
 
                     <div class="flex gap-4 mt-6">
                         <!-- SETUJUI -->
-                        <form action="{{ route('admin.pengajuan-surat.setujui', $surat->id) }}" method="POST">
+                        <form action="{{ route($routePrefix . '.pengajuan-surat.setujui', $surat->id) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl">
@@ -103,7 +104,7 @@
                             ✖ Tolak
                         </button>
 
-                        <a href="{{ route('admin.pengajuan-surat.index') }}"
+                        <a href="{{ route($routePrefix . '.pengajuan-surat.index') }}"
                            class="px-6 py-3 bg-gray-300 rounded-xl">
                            Kembali
                         </a>

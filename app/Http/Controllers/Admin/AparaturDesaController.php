@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AparaturDesa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AparaturDesaController extends Controller
 {
@@ -32,7 +33,17 @@ class AparaturDesaController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            $validated['foto'] = $request->file('foto')->store('aparatur-desa', 'public');
+            $file = $request->file('foto');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+            $filename = 'aparatur-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+
+            $destDir = public_path('images/aparatur-desa');
+            if (!is_dir($destDir)) {
+                @mkdir($destDir, 0775, true);
+            }
+
+            $file->move($destDir, $filename);
+            $validated['foto'] = 'images/aparatur-desa/' . $filename;
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -62,11 +73,30 @@ class AparaturDesaController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            if ($aparatur_desa->foto && Storage::disk('public')->exists($aparatur_desa->foto)) {
-                Storage::disk('public')->delete($aparatur_desa->foto);
+            // Hapus file lama jika ada
+            if (!empty($aparatur_desa->foto)) {
+                if (Str::startsWith($aparatur_desa->foto, 'images/')) {
+                    $oldPath = public_path($aparatur_desa->foto);
+                    if (is_file($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                } else {
+                    // Backward-compat: dulu sempat disimpan di storage/public
+                    Storage::disk('public')->delete($aparatur_desa->foto);
+                }
             }
 
-            $validated['foto'] = $request->file('foto')->store('aparatur-desa', 'public');
+            $file = $request->file('foto');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+            $filename = 'aparatur-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+
+            $destDir = public_path('images/aparatur-desa');
+            if (!is_dir($destDir)) {
+                @mkdir($destDir, 0775, true);
+            }
+
+            $file->move($destDir, $filename);
+            $validated['foto'] = 'images/aparatur-desa/' . $filename;
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -79,8 +109,16 @@ class AparaturDesaController extends Controller
 
     public function destroy(AparaturDesa $aparatur_desa)
     {
-        if ($aparatur_desa->foto && Storage::disk('public')->exists($aparatur_desa->foto)) {
-            Storage::disk('public')->delete($aparatur_desa->foto);
+        if (!empty($aparatur_desa->foto)) {
+            if (Str::startsWith($aparatur_desa->foto, 'images/')) {
+                $path = public_path($aparatur_desa->foto);
+                if (is_file($path)) {
+                    @unlink($path);
+                }
+            } else {
+                // Backward-compat: dulu sempat disimpan di storage/public
+                Storage::disk('public')->delete($aparatur_desa->foto);
+            }
         }
 
         $aparatur_desa->delete();

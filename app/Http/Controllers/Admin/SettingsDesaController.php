@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\SettingsDesa;
 use App\Models\AparaturDesa;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SettingsDesaController extends Controller
 {
@@ -22,11 +23,30 @@ class SettingsDesaController extends Controller
 
     // Handle upload foto kepala desa
     if ($request->hasFile('kepala_desa_foto')) {
-        if ($data->kepala_desa_foto) {
-            Storage::delete('public/' . $data->kepala_desa_foto);
+        // Hapus file lama jika ada
+        if (!empty($data->kepala_desa_foto)) {
+            if (Str::startsWith($data->kepala_desa_foto, 'images/')) {
+                $oldPath = public_path($data->kepala_desa_foto);
+                if (is_file($oldPath)) {
+                    @unlink($oldPath);
+                }
+            } else {
+                // Backward-compat: dulu sempat disimpan di storage/public
+                Storage::disk('public')->delete($data->kepala_desa_foto);
+            }
         }
-        $fotoPath = $request->file('kepala_desa_foto')->store('kepala_desa', 'public');
-        $data->kepala_desa_foto = $fotoPath;
+
+        $file = $request->file('kepala_desa_foto');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $filename = 'kepala-desa-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+
+        $destDir = public_path('images/kepala_desa');
+        if (!is_dir($destDir)) {
+            @mkdir($destDir, 0775, true);
+        }
+
+        $file->move($destDir, $filename);
+        $data->kepala_desa_foto = 'images/kepala_desa/' . $filename;
     }
 
     // Update data

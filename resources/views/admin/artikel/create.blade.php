@@ -37,8 +37,20 @@
                        class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-8 py-3 rounded-2xl font-medium">
                         Batal
                     </a>
+
+                <a href="{{ route('admin.berita.index') }}"
+                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.berita.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
+                    <span class="text-2xl">???</span>
+                    <span class="font-medium">Berita Desa</span>
+                </a>
                     <a href="{{ route('admin.artikel.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-2xl font-semibold">
                     Kembali
+                </a>
+
+                <a href="{{ route('admin.berita.index') }}"
+                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.berita.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
+                    <span class="text-2xl">???</span>
+                    <span class="font-medium">Berita Desa</span>
                 </a>
                 </div>
             </div>

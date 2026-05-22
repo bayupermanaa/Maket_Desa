@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\WilayahDesaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,3 +23,6 @@ Route::get('/dashboard-stats', function () {
         ],
     ]);
 });
+
+Route::get('/wilayah-desa/banjar-dinas', [WilayahDesaController::class, 'banjarDinas']);
+

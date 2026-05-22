@@ -1,205 +1,365 @@
 <x-app-layout>
     <x-slot name="title">Pengelolaan Pengaduan Masyarakat</x-slot>
+    @php($routePrefix = request()->routeIs('kepala.*') ? 'kepala' : 'admin')
 
     <div class="min-h-screen bg-gray-100 flex">
-        <!-- SIDEBAR -->
-        <aside class="w-72 bg-gray-900 text-white min-h-screen p-6 flex-shrink-0">
-             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 mb-10">
-                    <div class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-                        <img src="{{ asset('storage/images/logo.png') }}" alt="Logo Desa" class="w-full h-full object-contain">
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-semibold">Desa Maket</h1>
-                        <p class="text-xs text-gray-400">Admin Panel</p>
-                    </div>
-                </a>
+        @include('admin.partials.sidebar')
 
-            <nav class="space-y-1">
-                <!-- Dashboard -->
-                <a href="{{ route('admin.dashboard') }}" 
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition
-                          {{ request()->routeIs('admin.dashboard') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    🏠 Dashboard
-                </a>
-
-                <!-- Data Penduduk -->
-                  <a href="/admin/data-penduduk" 
-                    class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 text-gray-300 hover:text-white transition-all {{ request()->is('admin/data-penduduk*') ? 'bg-gray-800 text-white' : '' }}">
-                    <span class="text-2xl">👥</span>
-                    <span class="font-medium">Data Penduduk</span>
-                </a>
-
-                <!-- Pengajuan Surat -->
-                <a href="{{ route('admin.pengajuan-surat.index') }}" 
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition
-                          {{ request()->routeIs('admin.pengajuan-surat.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    📄 Pengajuan Surat
-                </a>
-
-                <!-- Pengaduan Masyarakat -->
-                 <a href="{{ route('admin.pengaduan') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('admin.pengaduan') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    📢 Pengaduan Masyarakat
-                </a>
-
-                <!-- Laporan & Statistik -->
-                <a href="#" 
-                   class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    📊 Laporan & Statistik
-                </a>
-
-                <!-- Keuangan Desa -->
-                <a href="#" 
-                   class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    💰 Keuangan Desa
-                </a>
-                
-                 <a href="{{ route('admin.aparatur-desa.index') }}"
-                    class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.aparatur-desa.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    🏛️ Aparatur Desa
-                </a>
-
-                <!-- Pengaturan -->
-                 <a href="{{ route('admin.settings-desa.edit') }}" 
-                    class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    ⚙️ CMS Dashboard Desa
-                </a>
-            </nav>
-        </aside>
-
-        <!-- KONTEN UTAMA -->
         <main class="flex-1 p-10">
-                <!-- HEADER -->
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-2xl font-bold">Daftar Pengaduan Masyarakat</h3>
-                    <div class="flex items-center gap-4">
-                        <button onclick="loadPengaduan()" class="px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl flex items-center gap-2">↻ Refresh Data</button>
-                        <div class="relative cursor-pointer">
-                            <span class="text-2xl">🛎️</span>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 rounded-full">3</span>
-                        </div>
-                        <button onclick="logout()" class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700">Logout</button>
-                    </div>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800">Daftar Pengaduan Masyarakat</h3>
+                    <p class="text-sm text-gray-500 mt-1">Kelola status, catatan tindak lanjut, dan pantau timeline proses.</p>
                 </div>
-
-                <!-- SEARCH BAR -->
-                <input type="text" id="searchInput" placeholder="Cari nama pelapor atau judul pengaduan..."
-                       class="w-full md:w-96 border border-gray-300 rounded-2xl px-5 py-3 mb-6 focus:outline-none focus:border-orange-500">
-
-                <!-- TABLE -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-4 text-left">Tanggal</th>
-                                <th class="px-6 py-4 text-left">Nomor</th>
-                                <th class="px-6 py-4 text-left">Nama Pelapor</th>
-                                <th class="px-6 py-4 text-left">Judul Pengaduan</th>
-                                <th class="px-6 py-4 text-left">Status</th>
-                                <th class="px-6 py-4 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="complaintTable" class="divide-y divide-gray-200 odd:bg-gray-50"></tbody>
-                    </table>
-                </div>
-
-                <!-- DETAIL PANEL -->
-                <div id="detailPanel" class="hidden mt-8 bg-white rounded-3xl shadow-sm p-8">
-                    <div class="flex justify-between mb-6">
-                        <div>
-                            <h3 class="text-2xl font-semibold" id="detailTitle"></h3>
-                            <p class="text-gray-500" id="detailInfo"></p>
-                        </div>
-                        <button onclick="closeDetail()" class="text-3xl text-gray-400 hover:text-gray-600">✕</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        <div class="lg:col-span-3">
-                            <h4 class="font-medium mb-4">Timeline</h4>
-                            <div id="timeline" class="space-y-6 border-l-2 border-orange-200 pl-6"></div>
-                        </div>
-                        <div class="lg:col-span-4">
-                            <h4 class="font-medium mb-4">Foto Bukti</h4>
-                            <div id="fotoBukti" class="grid grid-cols-2 gap-4"></div>
-                        </div>
-                        <div class="lg:col-span-5">
-                            <h4 class="font-medium mb-4">Catatan & Tindak Lanjut</h4>
-                            <textarea id="catatan" rows="6" class="w-full border rounded-2xl p-5"></textarea>
-
-                            <div class="mt-6">
-                                <label class="block text-sm font-medium mb-2">Upload Bukti Tindak Lanjut</label>
-                                <input type="file" class="w-full">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 flex gap-4">
-                        <button onclick="updateStatus('sedang_diproses')" class="flex-1 py-4 bg-yellow-500 text-white rounded-2xl">Sedang Diproses</button>
-                        <button onclick="updateStatus('selesai')" class="flex-1 py-4 bg-green-600 text-white rounded-2xl">Selesai</button>
-                        <button onclick="saveChanges()" class="flex-1 py-4 bg-orange-600 text-white rounded-2xl">Simpan Perubahan</button>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route($routePrefix . '.pengaduan.export.excel') }}" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">
+                        Export Excel
+                    </a>
+                    <a href="{{ route($routePrefix . '.pengaduan.export.pdf') }}" target="_blank" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">
+                        Export PDF
+                    </a>
+                    <button id="btn-refresh" type="button" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium">
+                        Refresh Data
+                    </button>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="bg-red-600 text-white px-5 py-2.5 rounded-xl hover:bg-red-700 text-sm font-medium">
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+                <div class="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Cari nomor tiket, nama pelapor, atau judul..."
+                        class="w-full md:w-[28rem] border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-orange-500"
+                    >
+                    <select id="statusFilter" class="border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-orange-500">
+                        <option value="all">Semua Status</option>
+                        <option value="baru">Baru</option>
+                        <option value="diproses">Diproses</option>
+                        <option value="selesai">Selesai</option>
+                        <option value="ditolak">Ditolak</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold text-gray-600">Tanggal</th>
+                            <th class="px-6 py-4 text-left font-semibold text-gray-600">No. Tiket</th>
+                            <th class="px-6 py-4 text-left font-semibold text-gray-600">Nama Pelapor</th>
+                            <th class="px-6 py-4 text-left font-semibold text-gray-600">Judul Pengaduan</th>
+                            <th class="px-6 py-4 text-left font-semibold text-gray-600">Status</th>
+                            <th class="px-6 py-4 text-right font-semibold text-gray-600">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintTable" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+
+            <section id="detailPanel" class="hidden mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                    <div>
+                        <h4 id="detailTitle" class="text-2xl font-semibold text-gray-800">Detail Pengaduan</h4>
+                        <p id="detailInfo" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <button id="closeDetailButton" type="button" class="text-sm px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+                        Tutup
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="rounded-xl border border-gray-100 p-4">
+                        <p class="text-xs text-gray-500">Status Saat Ini</p>
+                        <p id="detailStatusText" class="font-semibold text-gray-800 mt-1">-</p>
+                    </div>
+                    <div class="rounded-xl border border-gray-100 p-4">
+                        <p class="text-xs text-gray-500">Tanggal Laporan</p>
+                        <p id="detailTanggalText" class="font-semibold text-gray-800 mt-1">-</p>
+                    </div>
+                    <div class="rounded-xl border border-gray-100 p-4">
+                        <p class="text-xs text-gray-500">Pelapor</p>
+                        <p id="detailPelaporText" class="font-semibold text-gray-800 mt-1">-</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-5 space-y-6">
+                        <div>
+                            <h5 class="font-medium text-gray-800 mb-2">Isi Pengaduan</h5>
+                            <p id="detailDeskripsi" class="text-sm text-gray-700 leading-relaxed">-</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-800 mb-2">Foto Bukti</h5>
+                            <div id="fotoBukti" class="grid grid-cols-2 gap-3"></div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3">
+                        <h5 class="font-medium text-gray-800 mb-2">Timeline</h5>
+                        <div id="timeline" class="space-y-3"></div>
+                    </div>
+                    <div class="lg:col-span-4">
+                        <h5 class="font-medium text-gray-800 mb-2">Tindak Lanjut Admin</h5>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="statusSelect" class="block text-sm text-gray-600 mb-1">Status</label>
+                                <select id="statusSelect" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-orange-500">
+                                    <option value="baru">Baru</option>
+                                    <option value="sedang_diproses">Sedang Diproses</option>
+                                    <option value="selesai">Selesai</option>
+                                    <option value="ditolak">Ditolak</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="catatan" class="block text-sm text-gray-600 mb-1">Catatan Admin</label>
+                                <textarea id="catatan" rows="8" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-orange-500" placeholder="Tulis tindak lanjut untuk warga..."></textarea>
+                            </div>
+                            <div>
+                                <label for="fotoBuktiInput" class="block text-sm text-gray-600 mb-1">Foto Bukti Tindak Lanjut (Opsional)</label>
+                                <input
+                                    id="fotoBuktiInput"
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"
+                                >
+                                <p class="text-xs text-gray-500 mt-1">Gunakan untuk bukti progres (mis. baru dikerjakan 3 meter) atau bukti selesai.</p>
+                            </div>
+                            <button id="saveChangesButton" type="button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-medium">
+                                Simpan Perubahan
+                            </button>
+                            <p id="saveFeedback" class="text-sm hidden"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    @push('scripts')
     <script>
-        let currentId = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            const dataUrl = "{{ route($routePrefix . '.pengaduan.data') }}";
+            const showUrlTemplate = "{{ route($routePrefix . '.pengaduan.show', ['id' => '__ID__']) }}";
+            const updateUrlTemplate = "{{ route($routePrefix . '.pengaduan.update', ['id' => '__ID__']) }}";
+            const csrfToken = "{{ csrf_token() }}";
 
-        async function loadPengaduan() {
-            const tbody = document.getElementById('complaintTable');
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10">Memuat data...</td></tr>`;
+            const complaintTable = document.getElementById('complaintTable');
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const detailPanel = document.getElementById('detailPanel');
+            const detailTitle = document.getElementById('detailTitle');
+            const detailInfo = document.getElementById('detailInfo');
+            const detailDeskripsi = document.getElementById('detailDeskripsi');
+            const detailStatusText = document.getElementById('detailStatusText');
+            const detailTanggalText = document.getElementById('detailTanggalText');
+            const detailPelaporText = document.getElementById('detailPelaporText');
+            const statusSelect = document.getElementById('statusSelect');
+            const catatanInput = document.getElementById('catatan');
+            const fotoBuktiInput = document.getElementById('fotoBuktiInput');
+            const timeline = document.getElementById('timeline');
+            const fotoBukti = document.getElementById('fotoBukti');
+            const saveFeedback = document.getElementById('saveFeedback');
 
-            try {
-                const res = await fetch("{{ route('admin.pengaduan.data') }}");
-                const data = await res.json();
+            let complaints = [];
+            let currentId = null;
 
-                let html = '';
-                data.forEach(item => {
-                    const statusClass = item.status === 'sedang_diproses' ? 'bg-yellow-100 text-yellow-700' : 
-                                       item.status === 'selesai' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
-                    
-                    html += `
-                        <tr class="hover:bg-gray-100">
-                            <td class="px-6 py-5">${item.tanggal}</td>
-                            <td class="px-6 py-5 font-medium">${item.nomor}</td>
-                            <td class="px-6 py-5">${item.nama_pelapor}</td>
-                            <td class="px-6 py-5">${item.judul}</td>
-                            <td class="px-6 py-5"><span class="px-4 py-1 rounded-full text-xs font-medium ${statusClass}">${item.status}</span></td>
-                            <td class="px-6 py-5 text-center">
-                                <button onclick="showDetail(${item.id})" class="text-orange-600 hover:underline">Detail →</button>
-                            </td>
-                        </tr>
-                    `;
+            const normalizeStatus = (status) => {
+                if (status === 'sedang_diproses' || status === 'diproses') return 'diproses';
+                return status;
+            };
+
+            const formatStatusLabel = (status) => {
+                const labels = {
+                    baru: 'Baru',
+                    sedang_diproses: 'Sedang Diproses',
+                    diproses: 'Sedang Diproses',
+                    selesai: 'Selesai',
+                    ditolak: 'Ditolak',
+                };
+                return labels[status] || status || '-';
+            };
+
+            const statusClass = (status) => {
+                if (status === 'selesai') return 'bg-emerald-100 text-emerald-700';
+                if (status === 'ditolak') return 'bg-rose-100 text-rose-700';
+                if (status === 'sedang_diproses' || status === 'diproses') return 'bg-blue-100 text-blue-700';
+                return 'bg-amber-100 text-amber-700';
+            };
+
+            const renderTable = () => {
+                const q = (searchInput.value || '').trim().toLowerCase();
+                const selectedStatus = statusFilter.value;
+
+                const filtered = complaints.filter((item) => {
+                    const hay = `${item.nomor} ${item.nama_pelapor} ${item.judul}`.toLowerCase();
+                    const matchSearch = q === '' || hay.includes(q);
+                    const matchStatus = selectedStatus === 'all' || normalizeStatus(item.status) === selectedStatus;
+                    return matchSearch && matchStatus;
                 });
 
-                tbody.innerHTML = html || `<tr><td colspan="6" class="text-center py-10 text-gray-500">Belum ada pengaduan</td></tr>`;
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-red-500">Gagal memuat data</td></tr>`;
-            }
-        }
+                if (filtered.length === 0) {
+                    complaintTable.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Data tidak ditemukan.</td></tr>';
+                    return;
+                }
 
-        async function showDetail(id) {
-            currentId = id;
-            document.getElementById('detailPanel').classList.remove('hidden');
-            // Tambahkan logika untuk load detail pengaduan
-        }
+                complaintTable.innerHTML = filtered.map((item) => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">${item.tanggal}</td>
+                        <td class="px-6 py-4 font-medium text-gray-700">${item.nomor}</td>
+                        <td class="px-6 py-4">${item.nama_pelapor}</td>
+                        <td class="px-6 py-4">${item.judul}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass(item.status)}">${formatStatusLabel(item.status)}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button type="button" class="detail-btn px-3 py-1.5 rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50 text-sm" data-id="${item.id}">
+                                Detail
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
 
-        function closeDetail() {
-            document.getElementById('detailPanel').classList.add('hidden');
-        }
+                complaintTable.querySelectorAll('.detail-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => showDetail(btn.dataset.id));
+                });
+            };
 
-        function updateStatus(status) {
-            alert(`Status diubah menjadi ${status}`);
-        }
+            const loadPengaduan = async () => {
+                complaintTable.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Memuat data...</td></tr>';
+                try {
+                    const res = await fetch(dataUrl);
+                    complaints = await res.json();
+                    renderTable();
+                } catch (error) {
+                    complaintTable.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-rose-600">Gagal memuat data pengaduan.</td></tr>';
+                }
+            };
 
-        async function saveChanges() {
-            alert('Perubahan disimpan');
+            const renderTimeline = (items) => {
+                if (!Array.isArray(items) || items.length === 0) {
+                    timeline.innerHTML = '<p class="text-sm text-gray-500">Belum ada timeline.</p>';
+                    return;
+                }
+
+                timeline.innerHTML = items.map((item) => `
+                    <div class="rounded-xl border border-gray-100 p-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-sm font-medium text-gray-800">${formatStatusLabel(item.status)}</p>
+                            <p class="text-xs text-gray-500">${item.waktu || '-'}</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Oleh: ${item.dibuat_oleh || '-'}</p>
+                        <p class="text-sm text-gray-700 mt-2">${item.catatan || '-'}</p>
+                        ${item.foto_bukti_url ? `<a href="${item.foto_bukti_url}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2"><img src="${item.foto_bukti_url}" alt="Bukti Tindak Lanjut" class="w-24 h-24 rounded-lg object-cover border border-gray-200"></a>` : ''}
+                    </div>
+                `).join('');
+            };
+
+            const renderFoto = (paths) => {
+                if (!Array.isArray(paths) || paths.length === 0) {
+                    fotoBukti.innerHTML = '<p class="text-sm text-gray-500">Tidak ada foto bukti.</p>';
+                    return;
+                }
+
+                fotoBukti.innerHTML = paths.map((path) => {
+                    const url = path.startsWith('http') ? path : `/storage/${path}`;
+                    return `
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" class="block">
+                            <img src="${url}" alt="Foto Bukti" class="w-full h-28 object-cover rounded-xl border border-gray-200">
+                        </a>
+                    `;
+                }).join('');
+            };
+
+            const setFeedback = (message, isError = false) => {
+                saveFeedback.textContent = message;
+                saveFeedback.classList.remove('hidden', 'text-emerald-600', 'text-rose-600');
+                saveFeedback.classList.add(isError ? 'text-rose-600' : 'text-emerald-600');
+            };
+
+            const clearFeedback = () => {
+                saveFeedback.classList.add('hidden');
+                saveFeedback.textContent = '';
+            };
+
+            const showDetail = async (id) => {
+                currentId = id;
+                clearFeedback();
+                detailPanel.classList.remove('hidden');
+                detailTitle.textContent = 'Memuat detail...';
+                detailInfo.textContent = '';
+
+                try {
+                    const showUrl = showUrlTemplate.replace('__ID__', id);
+                    const res = await fetch(showUrl);
+                    if (!res.ok) throw new Error('Gagal memuat detail');
+                    const data = await res.json();
+
+                    detailTitle.textContent = `${data.nomor} - ${data.judul}`;
+                    detailInfo.textContent = `${data.nama_pelapor} • ${data.tanggal}`;
+                    detailDeskripsi.textContent = data.deskripsi || '-';
+                    detailStatusText.textContent = formatStatusLabel(data.status);
+                    detailTanggalText.textContent = data.tanggal || '-';
+                    detailPelaporText.textContent = data.nama_pelapor || '-';
+
+                    statusSelect.value = data.status === 'diproses' ? 'sedang_diproses' : data.status;
+                    catatanInput.value = data.catatan_admin || '';
+                    if (fotoBuktiInput) fotoBuktiInput.value = '';
+
+                    renderTimeline(data.timeline);
+                    renderFoto(data.foto_bukti);
+                } catch (error) {
+                    detailTitle.textContent = 'Gagal memuat detail pengaduan';
+                    detailInfo.textContent = 'Silakan coba lagi.';
+                }
+            };
+
+            const saveChanges = async () => {
+                if (!currentId) return;
+                clearFeedback();
+
+                try {
+                    const updateUrl = updateUrlTemplate.replace('__ID__', currentId);
+                    const formData = new FormData();
+                    formData.append('_method', 'PUT');
+                    formData.append('status', statusSelect.value);
+                    formData.append('catatan', catatanInput.value || '');
+                    if (fotoBuktiInput && fotoBuktiInput.files && fotoBuktiInput.files[0]) {
+                        formData.append('foto_bukti', fotoBuktiInput.files[0]);
+                    }
+
+                    const res = await fetch(updateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: formData,
+                    });
+
+                    if (!res.ok) {
+                        throw new Error('Gagal menyimpan perubahan');
+                    }
+
+                    setFeedback('Perubahan berhasil disimpan.');
+                    await Promise.all([loadPengaduan(), showDetail(currentId)]);
+                } catch (error) {
+                    setFeedback('Gagal menyimpan perubahan. Coba lagi.', true);
+                }
+            };
+
+            document.getElementById('btn-refresh').addEventListener('click', loadPengaduan);
+            document.getElementById('closeDetailButton').addEventListener('click', () => detailPanel.classList.add('hidden'));
+            document.getElementById('saveChangesButton').addEventListener('click', saveChanges);
+            searchInput.addEventListener('input', renderTable);
+            statusFilter.addEventListener('change', renderTable);
+
             loadPengaduan();
-        }
-
-        window.onload = loadPengaduan;
+        });
     </script>
-    @endpush
 </x-app-layout>

@@ -4,77 +4,7 @@
     <div class="min-h-screen bg-gray-100 flex">
 
         <!-- SIDEBAR -->
-        <aside class="w-72 bg-gray-900 text-white min-h-screen p-6 flex-shrink-0">
-             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 mb-10">
-                    <div class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-                        <img src="{{ asset('storage/images/logo.png') }}" alt="Logo Desa" class="w-full h-full object-contain">
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-semibold">Desa Maket</h1>
-                        <p class="text-xs text-gray-400">Admin Panel</p>
-                    </div>
-                </a>
-
-            <nav class="space-y-1">
-                <!-- Dashboard -->
-                <a href="{{ route('admin.dashboard') }}" 
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition
-                          {{ request()->routeIs('admin.dashboard') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    🏠 Dashboard
-                </a>
-
-                <!-- Data Penduduk -->
-                <a href="/admin/data-penduduk" 
-                    class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 text-gray-300 hover:text-white transition-all {{ request()->is('admin/data-penduduk*') ? 'bg-gray-800 text-white' : '' }}">
-                    <span class="text-2xl">👥</span>
-                    <span class="font-medium">Data Penduduk</span>
-                </a>
-
-                <!-- Pengajuan Surat -->
-                <a href="{{ route('admin.pengajuan-surat.index') }}" 
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition
-                          {{ request()->routeIs('admin.pengajuan-surat.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    📄 Pengajuan Surat
-                </a>
-
-                <!-- Pengaduan Masyarakat -->
-                <a href="{{ route('admin.pengaduan') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('admin.pengaduan') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    📢 Pengaduan Masyarakat
-                </a>
-
-                <!-- Laporan & Statistik -->
-                <a href="#" 
-                   class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    📊 Laporan & Statistik
-                </a>
-
-                <!-- Keuangan Desa -->
-                <a href="#" 
-                   class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    💰 Keuangan Desa
-                </a>
-
-                <!-- Artikel Desa -->
-                <a href="{{ route('admin.artikel.index') }}"
-                class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition
-                        {{ request()->routeIs('admin.artikel.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    <span class="text-2xl">📰</span>
-                    <span class="font-medium">Artikel Desa</span>
-                </a>
-
-                <a href="{{ route('admin.aparatur-desa.index') }}"
-                    class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.aparatur-desa.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
-                    🏛️ Aparatur Desa
-                </a>
-
-                <!-- Pengaturan -->
-                <a href="{{ route('admin.settings-desa.edit') }}" 
-                    class="flex items-center gap-3 px-5 py-4 hover:bg-gray-800 rounded-2xl transition">
-                    ⚙️ CMS Dashboard Desa
-                </a>
-            </nav>
-        </aside>
+        @include('admin.partials.sidebar')
 
     <!-- CONTENT -->
     <main class="flex-1 p-10">
@@ -123,7 +53,7 @@
                         <tr class="hover:bg-gray-50 transition">
                             <td class="px-6 py-4">
                                 @if($artikel->gambar)
-                                    <img src="{{ asset('storage/' . $artikel->gambar) }}" 
+                                    <img src="{{ \Illuminate\Support\Str::startsWith($artikel->gambar, 'artikel/') ? asset($artikel->gambar) : asset('storage/' . $artikel->gambar) }}" 
                                          alt="{{ $artikel->judul }}"
                                          class="w-16 h-16 object-cover rounded-xl shadow">
                                 @else
@@ -171,3 +101,6 @@
         </div>
     </div>
 </x-app-layout>
+
+
+
