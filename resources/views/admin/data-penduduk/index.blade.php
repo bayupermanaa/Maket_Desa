@@ -34,6 +34,22 @@
 
                     function confirmToggle(form) {
                         let actionText = form.querySelector('button').innerText;
+                        if (actionText.trim().toLowerCase() === 'nonaktifkan') {
+                            const reason = prompt('Masukkan keterangan kenapa penduduk ini tidak aktif:');
+
+                            if (reason === null) {
+                                return false;
+                            }
+
+                            const trimmed = reason.trim();
+                            if (trimmed === '') {
+                                alert('Keterangan nonaktif wajib diisi.');
+                                return false;
+                            }
+
+                            form.querySelector('input[name="keterangan_nonaktif"]').value = trimmed;
+                        }
+
                         return confirm(`Apakah Anda yakin ingin ${actionText.toLowerCase()} penduduk ini?`);
                     }
                 </script>
@@ -63,6 +79,7 @@
                                 <th class="border border-gray-300 px-3 py-2 text-left font-semibold">Suku</th>
                                 <th class="border border-gray-300 px-3 py-2 text-left font-semibold">Pendidikan</th>
                                 <th class="border border-gray-300 px-3 py-2 text-left font-semibold">Pekerjaan</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold">Keterangan Nonaktif</th>
                                 <th class="border border-gray-300 px-3 py-2 text-left font-semibold">Aktif</th>
                             </tr>
                         </thead>
@@ -90,10 +107,18 @@
                                 <td class="border border-gray-300 px-3 py-2 align-top">{{ $p->suku ?? '-' }}</td>
                                 <td class="border border-gray-300 px-3 py-2 align-top">{{ $p->pendidikan ?? '-' }}</td>
                                 <td class="border border-gray-300 px-3 py-2 align-top">{{ $p->pekerjaan ?? '-' }}</td>
+                                <td class="border border-gray-300 px-3 py-2 align-top min-w-48">
+                                    @if($p->is_active)
+                                        <span class="text-gray-400">-</span>
+                                    @else
+                                        <span class="text-rose-700">{{ $p->keterangan_nonaktif ?: 'Tidak ada keterangan.' }}</span>
+                                    @endif
+                                </td>
                                 <td class="border border-gray-300 px-3 py-2 align-top">
                                     <form action="{{ route('admin.penduduk.toggle-status', $p->id) }}" method="POST" onsubmit="return confirmToggle(this)">
                                         @csrf
                                         @method('PATCH')
+                                        <input type="hidden" name="keterangan_nonaktif" value="">
                                         <button type="submit" class="px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap {{ $p->is_active ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700' }}">
                                             {{ $p->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                         </button>
@@ -112,6 +137,5 @@
         </div>
     </div>
 </x-app-layout>
-
 
 

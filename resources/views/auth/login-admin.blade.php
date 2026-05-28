@@ -19,15 +19,20 @@
 
                         <div class="space-y-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Username / NIP</label>
-                                <input type="text" name="username" required
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Username / Email</label>
+                                <input type="text" name="username" required value="{{ old('username') }}"
+                                       placeholder="admin@desa.local atau admin"
                                        class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition">
+                                @error('username')
+                                    <p class="text-sm text-red-600 mt-2">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                                 <input type="password" name="password" required
                                        class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition">
+                                <p class="text-xs text-gray-500 mt-2">Demo: admin@desa.local / admin123</p>
                             </div>
 
                             <button type="submit"

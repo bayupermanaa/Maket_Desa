@@ -16,7 +16,7 @@ class Penduduk extends Model
     protected $fillable = [
         'rw','rt','dusun','alamat','kode_keluarga','nama_kepala_keluarga','no',
         'nik','nama','nama_anggota','jk','jenis_kelamin','hubungan','tempat_lahir','tgl_lahir',
-        'usia','status','agama','gol_darah','kewarganegaraan','suku','pendidikan','pekerjaan','is_active'
+        'usia','status','agama','gol_darah','kewarganegaraan','suku','pendidikan','pekerjaan','is_active','keterangan_nonaktif'
     ];
 
     protected $casts = [

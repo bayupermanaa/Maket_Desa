@@ -1,7 +1,16 @@
 ﻿<x-app-layout>
 <div class="min-h-screen bg-gray-50">
 
-    <style>[x-cloak]{display:none !important;}</style>
+    <style>
+        [x-cloak]{display:none !important;}
+        .scrollbar-samarkan {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .scrollbar-samarkan::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
 
     @php
         $popupAktif = (bool) (data_get($data ?? null, 'popup_aktif') ?? false);
@@ -76,14 +85,12 @@
 
                 <!-- Info Desa -->
                 <div class="flex items-center gap-4 min-w-0">
-                    <div class="w-24 h-24 bg-white/95 rounded-3xl flex items-center justify-center shadow-lg ring-4 ring-white/70 overflow-hidden">
-                        <img
-                            src="{{ asset('images/LOGO DESA.png') }}"
-                            alt="Logo Desa"
-                            class="w-full h-full object-contain p-1"
-                            onerror="this.style.display='none'; this.parentElement.classList.add('text-4xl','font-bold','text-blue-600'); this.parentElement.textContent='MD';"
-                        >
-                    </div>
+                    <img
+                        src="{{ asset('images/LOGO DESA.png') }}"
+                        alt="Logo Desa"
+                        class="w-24 h-24 object-contain drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]"
+                        onerror="this.style.display='none';"
+                    >
                     <div class="min-w-0">
                         <h1 class="text-3xl lg:text-4xl font-bold truncate">
                             SELAMAT DATANG DI MAKET DESA <span class="text-yellow-300">{{ $data->nama_desa ?? 'Maket Desa' }}</span>
@@ -116,8 +123,8 @@
         <!-- Menu Bar -->
         <nav class="bg-white/10 backdrop-blur-md border-t border-white/20">
             <div class="max-w-7xl mx-auto px-6">
-                <ul class="flex items-center h-14 text-sm font-medium overflow-x-auto whitespace-nowrap">
-                    @foreach(['home'=>'🏠 Home','penduduk'=>'👥 Penduduk','statistik'=>'📊 Statistik','wilayah'=>'🗺️ Wilayah','keuangan'=>'💰 Keuangan','program'=>'📋 Program','berita'=>'📰 Berita'] as $key=>$label)
+                <ul class="scrollbar-samarkan flex items-center h-14 text-sm font-medium overflow-x-auto whitespace-nowrap">
+                    @foreach(['home'=>'🏠 Home','tentang'=>'ℹ️ Tentang Maket','penduduk'=>'👥 Penduduk','statistik'=>'📊 Statistik','kesehatan'=>'🩺 Kesehatan','wilayah'=>'🗺️ Wilayah','keuangan'=>'💰 Keuangan','program'=>'📋 Program','berita'=>'📰 Berita'] as $key=>$label)
                     <li>
                         <a href="#" onclick="showSection('{{ $key }}')"
                            class="menu-item flex items-center gap-2 px-6 h-full hover:bg-white/10 transition-colors {{ $loop->first ? 'active border-white' : '' }}">
@@ -414,6 +421,75 @@
 
         </div>
 
+        <!-- ==================== SECTION TENTANG MAKET ==================== -->
+        <div id="section-tentang" class="section hidden">
+            <div class="mb-10">
+                <h2 class="text-3xl font-semibold text-gray-800 flex items-center gap-3">
+                    ℹ️ Tentang Maket
+                </h2>
+                <p class="text-gray-600 mt-2">
+                    Selamat datang pada web MAKET Desa Buruan.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 bg-white rounded-3xl shadow p-8 lg:p-10">
+                    <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                        MAKET Desa Buruan
+                    </div>
+                    <h3 class="mt-5 text-3xl font-bold text-gray-900 leading-tight">
+                        Selamat datang pada web MAKET Desa Buruan
+                    </h3>
+                    <div class="mt-6 prose prose-gray max-w-none text-gray-700 leading-relaxed">
+                        <p>
+                            MAKET Desa merupakan sebuah web untuk desa yang merupakan sebagai aksi desa memfasilitasi
+                            peningkatan pelayanan kepada masyarakat dengan memanfaatkan teknologi digital.
+                        </p>
+                        <p>
+                            MAKET Desa adalah sebuah sistem Manajemen Administrasi Kependudukan dan E-commerce Terpadu
+                            berbasis website yang dikelola secara mandiri oleh desa.
+                        </p>
+                        <p>
+                            Desa Buruan, Kecamatan Blahbatuh, Gianyar, Bali memiliki luas 4,21 km² terdiri dari tujuh
+                            dusun yaitu Buruan, Bangunliman, Celuk, Getas Kawan, Getas Kangin, Kutri, dan Ketandan.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="bg-white rounded-3xl shadow p-6">
+                        <h3 class="font-semibold text-lg text-gray-800">Informasi Wilayah</h3>
+                        <div class="mt-5 space-y-4 text-sm">
+                            <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                                <span class="text-gray-500">Kecamatan</span>
+                                <span class="font-semibold text-gray-800 text-right">{{ $desaKecamatan ?: '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                                <span class="text-gray-500">Kabupaten</span>
+                                <span class="font-semibold text-gray-800 text-right">{{ $desaKabupaten ?: '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                                <span class="text-gray-500">Provinsi</span>
+                                <span class="font-semibold text-gray-800 text-right">{{ $desaProvinsi ?: '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-gray-500">Luas Wilayah</span>
+                                <span class="font-semibold text-gray-800 text-right">{{ $data->luas_wilayah ?? '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-600 rounded-3xl shadow p-6 text-white">
+                        <p class="text-sm text-blue-100">Penduduk Terdata</p>
+                        <p class="mt-2 text-4xl font-bold">{{ number_format($totalPenduduk ?? 0) }}</p>
+                        <p class="mt-3 text-sm text-blue-100">
+                            Data penduduk yang tercatat dalam sistem informasi desa.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <!-- ==================== SECTION PENDUDUK ==================== -->
      <div id="section-penduduk" class="section hidden">
 
@@ -634,7 +710,74 @@
         Update terakhir: {{ now()->format('d F Y') }}
     </div>
 
-</div>
+    </div>
+
+    <!-- ==================== SECTION KESEHATAN ==================== -->
+    <div id="section-kesehatan" class="section hidden">
+        <div class="mb-10">
+            <h2 class="text-3xl font-semibold text-gray-800 flex items-center gap-3">
+                🩺 Informasi Kesehatan Desa
+            </h2>
+            <p class="text-gray-600 mt-2">Ringkasan layanan dan informasi kesehatan untuk masyarakat desa.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-3xl shadow p-8">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-3xl">🏥</div>
+                <h3 class="text-xl font-semibold text-gray-800 mt-5">Posyandu</h3>
+                <p class="text-sm text-gray-600 mt-3 leading-relaxed">
+                    Informasi pelayanan kesehatan ibu, bayi, balita, dan lansia di lingkungan desa.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow p-8">
+                <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center text-3xl">💉</div>
+                <h3 class="text-xl font-semibold text-gray-800 mt-5">Imunisasi</h3>
+                <p class="text-sm text-gray-600 mt-3 leading-relaxed">
+                    Jadwal dan pengumuman imunisasi dapat dipublikasikan untuk memudahkan warga mengikuti layanan.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow p-8">
+                <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center text-3xl">📋</div>
+                <h3 class="text-xl font-semibold text-gray-800 mt-5">Edukasi Kesehatan</h3>
+                <p class="text-sm text-gray-600 mt-3 leading-relaxed">
+                    Ruang informasi pencegahan penyakit, pola hidup sehat, dan program kesehatan desa.
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h3 class="font-semibold text-lg text-gray-800">Layanan Kesehatan Desa</h3>
+                    <a
+                        href="#"
+                        class="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+                    >
+                        Website Posyandu
+                    </a>
+                </div>
+            </div>
+            <div class="divide-y">
+                @foreach([
+                    ['title' => 'Pemeriksaan kesehatan dasar', 'desc' => 'Pemantauan kondisi kesehatan warga melalui kegiatan desa.'],
+                    ['title' => 'Pendataan ibu hamil dan balita', 'desc' => 'Dukungan pendataan untuk pelayanan kesehatan keluarga.'],
+                    ['title' => 'Pemantauan lansia', 'desc' => 'Informasi dan kegiatan kesehatan untuk warga lanjut usia.'],
+                ] as $layanan)
+                    <div class="px-6 py-5 flex items-start justify-between gap-4">
+                        <div>
+                            <p class="font-semibold text-gray-800">{{ $layanan['title'] }}</p>
+                            <p class="text-sm text-gray-600 mt-1">{{ $layanan['desc'] }}</p>
+                        </div>
+                        <span class="shrink-0 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1">
+                            Aktif
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
 
     <!-- ==================== SECTION STATISTIK ==================== -->
     <div id="section-statistik" class="section hidden">

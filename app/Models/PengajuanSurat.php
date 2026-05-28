@@ -12,6 +12,10 @@ class PengajuanSurat extends Model
 
     public const STATUS_MENUNGGU = 'Menunggu';
     public const STATUS_DIPROSES = 'Diproses';
+    public const STATUS_PERLU_PERBAIKAN = 'Perlu Perbaikan';
+    public const STATUS_DIAJUKAN_KE_KEPALA = 'Diajukan ke Kepala Desa';
+    public const STATUS_DISETUJUI_KEPALA = 'Disetujui Kepala Desa';
+    public const STATUS_DITOLAK_KEPALA = 'Ditolak Kepala Desa';
     public const STATUS_DISETUJUI = 'Disetujui';
     public const STATUS_DITOLAK = 'Ditolak';
 
@@ -27,11 +31,13 @@ class PengajuanSurat extends Model
         'status',        // Menunggu | Disetujui | Ditolak
         'keterangan',    // catatan admin
         'file_lampiran', // upload berkas masyarakat
+        'detail_surat',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'detail_surat' => 'array',
     ];
 
     public function penduduk(): BelongsTo

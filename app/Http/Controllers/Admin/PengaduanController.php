@@ -42,10 +42,20 @@ class PengaduanController extends Controller
      */
     public function data()
     {
-        $pengaduan = Pengaduan::with('user:id,name,nik')
-            ->select('id', 'judul', 'status', 'created_at', 'nama_pelapor', 'nik', 'nomor_tiket')
-            ->latest()
-            ->get();
+        $query = Pengaduan::with('user:id,name,nik')
+            ->select('id', 'judul', 'status', 'created_at', 'nama_pelapor', 'nik', 'nomor_tiket');
+
+        if (request()->routeIs('kepala.*')) {
+            $query->whereIn('status', [
+                Pengaduan::STATUS_DIAJUKAN_KE_KEPALA,
+                Pengaduan::STATUS_DISETUJUI_KEPALA,
+                Pengaduan::STATUS_DITOLAK_KEPALA,
+                Pengaduan::STATUS_SELESAI,
+                Pengaduan::STATUS_DITOLAK,
+            ]);
+        }
+
+        $pengaduan = $query->latest()->get();
 
         $data = $pengaduan->map(function ($item) {
             return [
@@ -96,7 +106,7 @@ class PengaduanController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'status'  => 'required|in:baru,sedang_diproses,diproses,selesai,ditolak',
+            'status'  => 'required|in:baru,sedang_diproses,diproses,diajukan_ke_kepala_desa,disetujui_kepala_desa,ditolak_kepala_desa,selesai,ditolak',
             'catatan' => 'nullable|string',
             'foto_bukti' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
@@ -105,7 +115,9 @@ class PengaduanController extends Controller
         $statusLama = $pengaduan->status;
         $catatanBaru = trim((string) $request->catatan);
 
-        $pengaduan->status = $request->status;
+        $statusBaru = $this->resolveWorkflowStatus($request->status, $pengaduan->status);
+
+        $pengaduan->status = $statusBaru;
         $pengaduan->catatan_admin = $catatanBaru !== '' ? $catatanBaru : null;
         $pengaduan->save();
 
@@ -118,9 +130,9 @@ class PengaduanController extends Controller
             PengaduanLog::create([
                 'pengaduan_id' => $pengaduan->id,
                 'status' => $pengaduan->status,
-                'catatan' => $catatanBaru !== '' ? $catatanBaru : 'Status pengaduan diperbarui.',
+                'catatan' => $catatanBaru !== '' ? $catatanBaru : $this->defaultCatatan($pengaduan->status),
                 'foto_bukti' => $fotoBuktiPath,
-                'dibuat_oleh' => 'Admin',
+                'dibuat_oleh' => request()->routeIs('kepala.*') ? 'Kepala Desa' : 'Admin',
             ]);
         } elseif ($fotoBuktiPath) {
             PengaduanLog::create([
@@ -136,5 +148,46 @@ class PengaduanController extends Controller
             'success' => true,
             'message' => 'Pengaduan berhasil diperbarui.'
         ]);
+    }
+
+    private function resolveWorkflowStatus(string $requestedStatus, string $currentStatus): string
+    {
+        if (request()->routeIs('kepala.*')) {
+            if ($requestedStatus === Pengaduan::STATUS_SELESAI) {
+                return Pengaduan::STATUS_DISETUJUI_KEPALA;
+            }
+
+            if ($requestedStatus === Pengaduan::STATUS_DITOLAK) {
+                return Pengaduan::STATUS_DITOLAK_KEPALA;
+            }
+
+            return $requestedStatus;
+        }
+
+        if ($requestedStatus === Pengaduan::STATUS_DIPROSES || $requestedStatus === 'diproses') {
+            return Pengaduan::STATUS_DIAJUKAN_KE_KEPALA;
+        }
+
+        if ($currentStatus === Pengaduan::STATUS_DISETUJUI_KEPALA && $requestedStatus === Pengaduan::STATUS_SELESAI) {
+            return Pengaduan::STATUS_SELESAI;
+        }
+
+        if ($currentStatus === Pengaduan::STATUS_DITOLAK_KEPALA && $requestedStatus === Pengaduan::STATUS_DITOLAK) {
+            return Pengaduan::STATUS_DITOLAK;
+        }
+
+        return $requestedStatus;
+    }
+
+    private function defaultCatatan(string $status): string
+    {
+        return match ($status) {
+            Pengaduan::STATUS_DIAJUKAN_KE_KEPALA => 'Pengaduan dikirim admin ke kepala desa untuk verifikasi.',
+            Pengaduan::STATUS_DISETUJUI_KEPALA => 'Pengaduan disetujui kepala desa dan dikirim kembali ke admin.',
+            Pengaduan::STATUS_DITOLAK_KEPALA => 'Pengaduan ditolak kepala desa dan dikirim kembali ke admin.',
+            Pengaduan::STATUS_SELESAI => 'Pengaduan sudah dikonfirmasi admin kepada masyarakat.',
+            Pengaduan::STATUS_DITOLAK => 'Pengaduan ditolak dan dikonfirmasi admin kepada masyarakat.',
+            default => 'Status pengaduan diperbarui.',
+        };
     }
 }

@@ -46,9 +46,21 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt(['email' => $request->username, 'password' => $request->password])) {
+        $username = trim($request->username);
+        $email = match (strtolower($username)) {
+            'admin', 'admin desa' => 'admin@desa.local',
+            default => $username,
+        };
+
+        $credentials = filter_var($email, FILTER_VALIDATE_EMAIL)
+            ? ['email' => $email, 'password' => $request->password]
+            : ['name' => $username, 'password' => $request->password];
+
+        if (Auth::attempt($credentials)) {
             $user = Auth::user();
             if ($user->role === 'admin_desa') {
+                $request->session()->regenerate();
+
                 session([
                     'role' => 'admin_desa',
                     'user_name' => $user->name,
@@ -60,7 +72,9 @@ class LoginController extends Controller
             Auth::logout();
         }
 
-        return back()->withErrors(['username' => 'Username atau password salah.']);
+        return back()
+            ->withInput($request->only('username'))
+            ->withErrors(['username' => 'Username atau password admin salah. Gunakan admin@desa.local / admin123.']);
     }
 
     public function loginKepalaDesa(Request $request)
@@ -70,9 +84,21 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt(['email' => $request->username, 'password' => $request->password])) {
+        $username = trim($request->username);
+        $email = match (strtolower($username)) {
+            'kepala', 'kepala desa', 'kades' => 'kepala@desa.local',
+            default => $username,
+        };
+
+        $credentials = filter_var($email, FILTER_VALIDATE_EMAIL)
+            ? ['email' => $email, 'password' => $request->password]
+            : ['name' => $username, 'password' => $request->password];
+
+        if (Auth::attempt($credentials)) {
             $user = Auth::user();
             if ($user->role === 'kepala_desa') {
+                $request->session()->regenerate();
+
                 session([
                     'role' => 'kepala_desa',
                     'user_name' => $user->name,
@@ -84,6 +110,8 @@ class LoginController extends Controller
             Auth::logout();
         }
 
-        return back()->withErrors(['username' => 'Username atau password salah.']);
+        return back()
+            ->withInput($request->only('username'))
+            ->withErrors(['username' => 'Username atau password kepala desa salah. Gunakan kepala@desa.local / kepala123.']);
     }
 }

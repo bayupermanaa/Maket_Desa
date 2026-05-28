@@ -1,8 +1,15 @@
 <x-app-layout>
-    <x-slot name="title">Dashboard Admin - Desa Maket</x-slot>
+    @php
+        $isKepala = request()->routeIs('kepala.*');
+        $routePrefix = $isKepala ? 'kepala' : 'admin';
+        $notifikasiSuratAdmin = \App\Models\PengajuanSurat::where('status', \App\Models\PengajuanSurat::STATUS_MENUNGGU)->count();
+    @endphp
+
+    <x-slot name="title">{{ $isKepala ? 'Dashboard Kepala Desa' : 'Dashboard Admin' }} - Desa Maket</x-slot>
 
     <div class="min-h-screen bg-gray-100 flex">
 
+        @if(!$isKepala)
         <!-- SIDEBAR (sama seperti sebelumnya, saya biarkan) -->
         <aside class="w-72 bg-gray-900 text-white min-h-screen p-6 flex-shrink-0">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 mb-10">
@@ -32,8 +39,13 @@
                 </a>
 
                 <a href="{{ route('admin.pengajuan-surat.index') }}"
-                   class="flex items-center gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.pengajuan-surat.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
+                   class="flex items-center justify-between gap-3 px-5 py-4 rounded-2xl font-medium transition {{ request()->routeIs('admin.pengajuan-surat.*') ? 'bg-orange-600 text-white' : 'hover:bg-gray-800' }}">
                     📄 Pengajuan Surat
+                    @if($notifikasiSuratAdmin > 0)
+                        <span class="min-w-6 h-6 px-2 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+                            {{ $notifikasiSuratAdmin }}
+                        </span>
+                    @endif
                 </a>
 
                 <a href="{{ route('admin.pengaduan') }}" 
@@ -87,6 +99,9 @@
                 </a>
             </nav>
         </aside>
+        @else
+            @include('admin.partials.sidebar')
+        @endif
 
         <!-- MAIN CONTENT -->
         <div class="flex-1">
@@ -94,11 +109,11 @@
             <!-- HEADER -->
             <header class="bg-white border-b shadow-sm px-8 py-5">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-3xl font-semibold text-gray-800">Dashboard Administrasi</h2>
+                    <h2 class="text-3xl font-semibold text-gray-800">{{ $isKepala ? 'Dashboard Kepala Desa' : 'Dashboard Administrasi' }}</h2>
                     <div class="flex items-center gap-6">
                         <div class="text-right">
-                            <p class="font-medium">{{ session('user_name', 'Admin Desa') }}</p>
-                            <p class="text-xs text-gray-500">Petugas Administrasi</p>
+                            <p class="font-medium">{{ session('user_name', $isKepala ? 'Kepala Desa' : 'Admin Desa') }}</p>
+                            <p class="text-xs text-gray-500">{{ $isKepala ? 'Verifikator Desa' : 'Petugas Administrasi' }}</p>
                         </div>
                         <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Yakin ingin logout?')">
                             @csrf
@@ -145,9 +160,9 @@
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h3 class="text-xl font-semibold text-gray-800">Ringkasan Laporan & Statistik</h3>
-                            <p class="text-sm text-gray-500 mt-1">Data singkat dari modul laporan admin.</p>
+                            <p class="text-sm text-gray-500 mt-1">Data singkat dari modul laporan desa.</p>
                         </div>
-                        <a href="{{ route('admin.laporan-statistik.index') }}" class="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-sm font-medium">
+                        <a href="{{ route($routePrefix . '.laporan-statistik.index') }}" class="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-sm font-medium">
                             Buka Laporan Lengkap
                         </a>
                     </div>
@@ -186,7 +201,7 @@
                     <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
                         <p class="text-xs text-amber-700">Notifikasi Admin</p>
                         <p class="text-lg font-semibold text-amber-800 mt-1">
-                            {{ number_format($pengaduanBelumDitindaklanjuti ?? 0) }} pengaduan belum ditindaklanjuti admin.
+                            {{ number_format($pengaduanBelumDitindaklanjuti ?? 0) }} pengaduan belum ditindaklanjuti.
                         </p>
                     </div>
                 </div>
@@ -286,18 +301,20 @@
                 <div class="mt-10 bg-white rounded-3xl shadow p-8">
                     <h3 class="font-semibold text-xl mb-6">Aksi Cepat</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="{{ route('admin.pengajuan-surat.index') }}" 
+                        <a href="{{ route($routePrefix . '.pengajuan-surat.index') }}"
                            class="py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-medium text-center transition">
-                            Verifikasi Surat Baru
+                            {{ $isKepala ? 'Verifikasi Surat dari Admin' : 'Verifikasi Surat Baru' }}
                         </a>
-                        <a href="{{ route('admin.pengaduan') }}" 
+                        <a href="{{ route($routePrefix . '.pengaduan') }}"
                            class="py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium text-center transition">
-                            Tanggapi Pengaduan
+                            {{ $isKepala ? 'Verifikasi Pengaduan dari Admin' : 'Tanggapi Pengaduan' }}
                         </a>
-                        <a href="/admin/data-penduduk" 
-                           class="py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-medium text-center transition">
-                            Update Data Penduduk
-                        </a>
+                        @unless($isKepala)
+                            <a href="/admin/data-penduduk"
+                               class="py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-medium text-center transition">
+                                Update Data Penduduk
+                            </a>
+                        @endunless
                     </div>
                 </div>
 

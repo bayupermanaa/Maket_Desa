@@ -1,4 +1,7 @@
 *
+!templates/
+!templates/*.docx
+generated-surat/
 !private/
 !public/
 !.gitignore

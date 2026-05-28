@@ -134,6 +134,9 @@ Route::get('/berita/{slug}', [PublicBeritaController::class, 'show'])->name('ber
 Route::post('/dashboard/masyarakat/pengajuan-surat', [PengajuanSuratController::class, 'storeMasyarakat'])
     ->middleware('auth')
     ->name('masyarakat.pengajuan-surat.store');
+Route::get('/dashboard/masyarakat/pengajuan-surat/{id}/preview', [PengajuanSuratController::class, 'previewMasyarakat'])
+    ->middleware('auth')
+    ->name('masyarakat.pengajuan-surat.preview');
 Route::post('/dashboard/masyarakat/pengaduan', [MasyarakatPengaduanController::class, 'storeMasyarakat'])
     ->middleware('auth')
     ->name('masyarakat.pengaduan.store');
@@ -170,7 +173,12 @@ Route::get('/dashboard/masyarakat', function () {
 
     $totalPengajuanSurat = (int) $safe(fn () => (clone $pengajuanSuratQuery)->count(), 0);
     $suratDiproses = (int) $safe(fn () => (clone $pengajuanSuratQuery)
-        ->whereIn('status', ['Menunggu', 'Diproses'])
+        ->whereIn('status', [
+            \App\Models\PengajuanSurat::STATUS_MENUNGGU,
+            \App\Models\PengajuanSurat::STATUS_DIPROSES,
+            \App\Models\PengajuanSurat::STATUS_DIAJUKAN_KE_KEPALA,
+            \App\Models\PengajuanSurat::STATUS_DISETUJUI_KEPALA,
+        ])
         ->count(), 0);
     $totalPengaduan = (int) $safe(fn () => (clone $pengaduanQuery)->count(), 0);
     $pengaduanSelesai = (int) $safe(fn () => (clone $pengaduanQuery)->where('status', 'selesai')->count(), 0);
@@ -236,6 +244,10 @@ Route::prefix('admin')->name('admin.')->middleware('admin.role')->group(function
 
     // Pengajuan Surat
     Route::resource('/pengajuan-surat', PengajuanSuratController::class);
+    Route::get('/pengajuan-surat/{id}/preview', [PengajuanSuratController::class, 'previewSurat'])->name('pengajuan-surat.preview');
+    Route::get('/pengajuan-surat/{id}/download', [PengajuanSuratController::class, 'downloadSurat'])->name('pengajuan-surat.download');
+    Route::get('/pengajuan-surat/{id}/pdf', [PengajuanSuratController::class, 'downloadPdf'])->name('pengajuan-surat.pdf');
+    Route::patch('/pengajuan-surat/{id}/administrasi', [PengajuanSuratController::class, 'updateAdministrasi'])->name('pengajuan-surat.administrasi');
     Route::patch('/pengajuan-surat/{id}/setujui', [PengajuanSuratController::class, 'setujui'])->name('pengajuan-surat.setujui');
     Route::patch('/pengajuan-surat/{id}/tolak', [PengajuanSuratController::class, 'tolak'])->name('pengajuan-surat.tolak');
 
@@ -268,12 +280,15 @@ Route::prefix('admin')->name('admin.')->middleware('admin.role')->group(function
 
 // ==================== ROUTE KEPALA DESA ====================
 Route::prefix('kepala-desa')->name('kepala.')->middleware('kepala.role')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'kepala'])
         ->name('dashboard');
 
     // Verifikasi Pengajuan Surat
     Route::get('/pengajuan-surat', [PengajuanSuratController::class, 'index'])->name('pengajuan-surat.index');
     Route::get('/pengajuan-surat/{id}', [PengajuanSuratController::class, 'show'])->name('pengajuan-surat.show');
+    Route::get('/pengajuan-surat/{id}/preview', [PengajuanSuratController::class, 'previewSurat'])->name('pengajuan-surat.preview');
+    Route::get('/pengajuan-surat/{id}/download', [PengajuanSuratController::class, 'downloadSurat'])->name('pengajuan-surat.download');
+    Route::get('/pengajuan-surat/{id}/pdf', [PengajuanSuratController::class, 'downloadPdf'])->name('pengajuan-surat.pdf');
     Route::patch('/pengajuan-surat/{id}/setujui', [PengajuanSuratController::class, 'setujui'])->name('pengajuan-surat.setujui');
     Route::patch('/pengajuan-surat/{id}/tolak', [PengajuanSuratController::class, 'tolak'])->name('pengajuan-surat.tolak');
 

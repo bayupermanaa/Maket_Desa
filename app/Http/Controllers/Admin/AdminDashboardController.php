@@ -15,6 +15,33 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
+        return view('dashboard.admin', $this->dashboardData());
+    }
+
+    public function kepala()
+    {
+        $data = $this->dashboardData();
+
+        $data['suratMenungguVerifikasi'] = PengajuanSurat::where('status', PengajuanSurat::STATUS_DIAJUKAN_KE_KEPALA)->count();
+        $data['suratSudahAccKepala'] = PengajuanSurat::where('status', PengajuanSurat::STATUS_DISETUJUI_KEPALA)->count();
+        $data['pengaduanMenungguVerifikasi'] = Pengaduan::where('status', Pengaduan::STATUS_DIAJUKAN_KE_KEPALA)->count();
+        $data['pengaduanSudahAccKepala'] = Pengaduan::where('status', Pengaduan::STATUS_DISETUJUI_KEPALA)->count();
+
+        $data['suratUntukDiverifikasi'] = PengajuanSurat::where('status', PengajuanSurat::STATUS_DIAJUKAN_KE_KEPALA)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $data['pengaduanUntukDiverifikasi'] = Pengaduan::where('status', Pengaduan::STATUS_DIAJUKAN_KE_KEPALA)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('dashboard.kepala', $data);
+    }
+
+    private function dashboardData(): array
+    {
         // Data statistik utama
         $totalPenduduk       = Penduduk::count();
         $totalPengajuanSurat = PengajuanSurat::count();
@@ -71,7 +98,7 @@ class AdminDashboardController extends Controller
         // Aktivitas Terbaru
         $aktivitasTerbaru = $this->getAktivitasTerbaru();
 
-        return view('dashboard.admin', [
+        return [
             'totalPenduduk'       => $totalPenduduk,
             'totalPengajuanSurat' => $totalPengajuanSurat,
             'pengaduanAktif'      => $pengaduanAktif,
@@ -89,7 +116,7 @@ class AdminDashboardController extends Controller
             'total_pendapatan'    => $total_pendapatan,
             'total_belanja'       => $total_belanja,
             'saldo'               => $saldo,
-        ]);
+        ];
     }
 
     /**

@@ -5,6 +5,10 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+database_dump/
+database_recovery/
+public/build.zip
+storage/framework/test-cookies.txt
 /.fleet
 /.idea
 /.nova

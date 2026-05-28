@@ -13,6 +13,9 @@ class Pengaduan extends Model
 
     public const STATUS_BARU = 'baru';
     public const STATUS_DIPROSES = 'sedang_diproses';
+    public const STATUS_DIAJUKAN_KE_KEPALA = 'diajukan_ke_kepala_desa';
+    public const STATUS_DISETUJUI_KEPALA = 'disetujui_kepala_desa';
+    public const STATUS_DITOLAK_KEPALA = 'ditolak_kepala_desa';
     public const STATUS_SELESAI = 'selesai';
     public const STATUS_DITOLAK = 'ditolak';
 

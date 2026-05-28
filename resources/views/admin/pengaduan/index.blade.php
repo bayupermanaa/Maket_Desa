@@ -1,6 +1,9 @@
 <x-app-layout>
     <x-slot name="title">Pengelolaan Pengaduan Masyarakat</x-slot>
-    @php($routePrefix = request()->routeIs('kepala.*') ? 'kepala' : 'admin')
+    @php
+        $isKepala = request()->routeIs('kepala.*');
+        $routePrefix = $isKepala ? 'kepala' : 'admin';
+    @endphp
 
     <div class="min-h-screen bg-gray-100 flex">
         @include('admin.partials.sidebar')
@@ -9,7 +12,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
                 <div>
                     <h3 class="text-2xl font-bold text-gray-800">Daftar Pengaduan Masyarakat</h3>
-                    <p class="text-sm text-gray-500 mt-1">Kelola status, catatan tindak lanjut, dan pantau timeline proses.</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ $isKepala ? 'Verifikasi pengaduan yang sudah dikirim admin.' : 'Kelola pengaduan, kirim ke kepala desa, lalu konfirmasi hasilnya ke masyarakat.' }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <a href="{{ route($routePrefix . '.pengaduan.export.excel') }}" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">
@@ -42,6 +45,9 @@
                         <option value="all">Semua Status</option>
                         <option value="baru">Baru</option>
                         <option value="diproses">Diproses</option>
+                        <option value="diajukan_ke_kepala_desa">Diajukan ke Kepala Desa</option>
+                        <option value="disetujui_kepala_desa">Disetujui Kepala Desa</option>
+                        <option value="ditolak_kepala_desa">Ditolak Kepala Desa</option>
                         <option value="selesai">Selesai</option>
                         <option value="ditolak">Ditolak</option>
                     </select>
@@ -106,19 +112,25 @@
                         <div id="timeline" class="space-y-3"></div>
                     </div>
                     <div class="lg:col-span-4">
-                        <h5 class="font-medium text-gray-800 mb-2">Tindak Lanjut Admin</h5>
+                        <h5 class="font-medium text-gray-800 mb-2">{{ $isKepala ? 'Verifikasi Kepala Desa' : 'Tindak Lanjut Admin' }}</h5>
                         <div class="space-y-4">
                             <div>
                                 <label for="statusSelect" class="block text-sm text-gray-600 mb-1">Status</label>
                                 <select id="statusSelect" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-orange-500">
-                                    <option value="baru">Baru</option>
-                                    <option value="sedang_diproses">Sedang Diproses</option>
-                                    <option value="selesai">Selesai</option>
-                                    <option value="ditolak">Ditolak</option>
+                                    @if($isKepala)
+                                        <option value="diajukan_ke_kepala_desa">Menunggu Verifikasi</option>
+                                        <option value="selesai">ACC Kepala Desa</option>
+                                        <option value="ditolak">Tolak Kepala Desa</option>
+                                    @else
+                                        <option value="baru">Baru</option>
+                                        <option value="sedang_diproses">Kirim ke Kepala Desa</option>
+                                        <option value="selesai">Konfirmasi Selesai ke Masyarakat</option>
+                                        <option value="ditolak">Tolak/Konfirmasi Ditolak ke Masyarakat</option>
+                                    @endif
                                 </select>
                             </div>
                             <div>
-                                <label for="catatan" class="block text-sm text-gray-600 mb-1">Catatan Admin</label>
+                                <label for="catatan" class="block text-sm text-gray-600 mb-1">{{ $isKepala ? 'Catatan Kepala Desa' : 'Catatan Admin' }}</label>
                                 <textarea id="catatan" rows="8" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-orange-500" placeholder="Tulis tindak lanjut untuk warga..."></textarea>
                             </div>
                             <div>
@@ -179,6 +191,9 @@
                     baru: 'Baru',
                     sedang_diproses: 'Sedang Diproses',
                     diproses: 'Sedang Diproses',
+                    diajukan_ke_kepala_desa: 'Diajukan ke Kepala Desa',
+                    disetujui_kepala_desa: 'Disetujui Kepala Desa',
+                    ditolak_kepala_desa: 'Ditolak Kepala Desa',
                     selesai: 'Selesai',
                     ditolak: 'Ditolak',
                 };
@@ -188,6 +203,9 @@
             const statusClass = (status) => {
                 if (status === 'selesai') return 'bg-emerald-100 text-emerald-700';
                 if (status === 'ditolak') return 'bg-rose-100 text-rose-700';
+                if (status === 'diajukan_ke_kepala_desa') return 'bg-indigo-100 text-indigo-700';
+                if (status === 'disetujui_kepala_desa') return 'bg-emerald-100 text-emerald-700';
+                if (status === 'ditolak_kepala_desa') return 'bg-orange-100 text-orange-700';
                 if (status === 'sedang_diproses' || status === 'diproses') return 'bg-blue-100 text-blue-700';
                 return 'bg-amber-100 text-amber-700';
             };
@@ -307,7 +325,13 @@
                     detailTanggalText.textContent = data.tanggal || '-';
                     detailPelaporText.textContent = data.nama_pelapor || '-';
 
-                    statusSelect.value = data.status === 'diproses' ? 'sedang_diproses' : data.status;
+                    if (data.status === 'diproses') {
+                        statusSelect.value = 'sedang_diproses';
+                    } else if (!Array.from(statusSelect.options).some((option) => option.value === data.status)) {
+                        statusSelect.value = "{{ $isKepala ? 'diajukan_ke_kepala_desa' : 'baru' }}";
+                    } else {
+                        statusSelect.value = data.status;
+                    }
                     catatanInput.value = data.catatan_admin || '';
                     if (fotoBuktiInput) fotoBuktiInput.value = '';
 

@@ -6,6 +6,9 @@
         $statusBadgeSurat = [
             'Menunggu' => 'bg-amber-100 text-amber-700',
             'Diproses' => 'bg-blue-100 text-blue-700',
+            'Diajukan ke Kepala Desa' => 'bg-indigo-100 text-indigo-700',
+            'Disetujui Kepala Desa' => 'bg-emerald-100 text-emerald-700',
+            'Ditolak Kepala Desa' => 'bg-orange-100 text-orange-700',
             'Disetujui' => 'bg-emerald-100 text-emerald-700',
             'Ditolak' => 'bg-rose-100 text-rose-700',
         ];
@@ -215,7 +218,7 @@
                                     class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
                                 >
                                     <option value="">Pilih jenis surat</option>
-                                    @foreach (['Surat Keterangan Domisili', 'Surat Keterangan Usaha', 'Surat Keterangan Tidak Mampu', 'Surat Pengantar SKCK', 'Surat Keterangan Belum Menikah'] as $jenisSurat)
+                                    @foreach (['Surat Keterangan Domisili', 'Surat Keterangan Usaha'] as $jenisSurat)
                                         <option value="{{ $jenisSurat }}" {{ old('jenis_surat') === $jenisSurat ? 'selected' : '' }}>{{ $jenisSurat }}</option>
                                     @endforeach
                                 </select>
@@ -233,35 +236,85 @@
                                 >
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label for="alamat" class="block text-sm font-medium text-gray-700">Alamat</label>
-                                <textarea
-                                    id="alamat"
-                                    name="alamat"
-                                    rows="2"
-                                    class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
-                                >{{ old('alamat') }}</textarea>
-                            </div>
+                            <div id="form-domisili-fields" class="md:col-span-2 hidden grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="md:col-span-2 rounded-2xl border border-orange-100 bg-orange-50 p-5">
+                                    <h4 class="font-semibold text-gray-800">Tata Cara Pengisian</h4>
+                                    <ol class="mt-3 list-decimal pl-5 space-y-1 text-sm text-gray-700">
+                                        <li>Isi data diri sesuai KTP/KK.</li>
+                                        <li>Nomor KTP diambil dari kolom NIK.</li>
+                                        <li>Alamat Asal diisi alamat lengkap pemohon.</li>
+                                        <li>Maksud dan Tujuan diisi kegunaan surat.</li>
+                                        <li>Untuk surat usaha, Keterangan Lain diisi jenis/nama usaha dan lokasi usaha.</li>
+                                        <li>Jika tidak ada tambahan, Keterangan Lain boleh ditulis tanda strip.</li>
+                                    </ol>
+                                </div>
 
-                            <div class="md:col-span-2">
-                                <label for="keperluan" class="block text-sm font-medium text-gray-700">Keperluan</label>
-                                <textarea
-                                    id="keperluan"
-                                    name="keperluan"
-                                    required
-                                    rows="3"
-                                    class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
-                                >{{ old('keperluan') }}</textarea>
-                            </div>
+                                <div>
+                                    <label for="tempat_lahir" class="block text-sm font-medium text-gray-700">Tempat Lahir</label>
+                                    <input id="tempat_lahir" name="detail_surat[tempat_lahir]" type="text" required value="{{ old('detail_surat.tempat_lahir') }}" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                </div>
 
-                            <div class="md:col-span-2">
-                                <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan Tambahan (Opsional)</label>
-                                <textarea
-                                    id="keterangan"
-                                    name="keterangan"
-                                    rows="2"
-                                    class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
-                                >{{ old('keterangan') }}</textarea>
+                                <div>
+                                    <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                                    <input id="tanggal_lahir" name="detail_surat[tanggal_lahir]" type="date" required value="{{ old('detail_surat.tanggal_lahir') }}" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                </div>
+
+                                <div>
+                                    <label for="kebangsaan" class="block text-sm font-medium text-gray-700">Kebangsaan</label>
+                                    <input id="kebangsaan" name="detail_surat[kebangsaan]" type="text" required value="{{ old('detail_surat.kebangsaan', 'Indonesia') }}" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                </div>
+
+                                <div>
+                                    <label for="agama" class="block text-sm font-medium text-gray-700">Agama</label>
+                                    <input id="agama" name="detail_surat[agama]" type="text" required value="{{ old('detail_surat.agama') }}" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                </div>
+
+                                <div>
+                                    <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                                    <select id="jenis_kelamin" name="detail_surat[jenis_kelamin]" required class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                        <option value="">Pilih jenis kelamin</option>
+                                        @foreach (['Laki-laki', 'Perempuan'] as $jk)
+                                            <option value="{{ $jk }}" {{ old('detail_surat.jenis_kelamin') === $jk ? 'selected' : '' }}>{{ $jk }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="pekerjaan" class="block text-sm font-medium text-gray-700">Pekerjaan</label>
+                                    <input id="pekerjaan" name="detail_surat[pekerjaan]" type="text" required value="{{ old('detail_surat.pekerjaan') }}" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="alamat" class="block text-sm font-medium text-gray-700">Alamat Asal</label>
+                                    <textarea
+                                        id="alamat"
+                                        name="alamat"
+                                        required
+                                        rows="2"
+                                        class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
+                                    >{{ old('alamat') }}</textarea>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="keperluan" class="block text-sm font-medium text-gray-700">Maksud dan Tujuan</label>
+                                    <textarea
+                                        id="keperluan"
+                                        name="keperluan"
+                                        required
+                                        rows="3"
+                                        class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
+                                    >{{ old('keperluan') }}</textarea>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="keterangan_lain" class="block text-sm font-medium text-gray-700">Keterangan Lain</label>
+                                    <textarea
+                                        id="keterangan_lain"
+                                        name="detail_surat[keterangan_lain]"
+                                        rows="2"
+                                        class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"
+                                    >{{ old('detail_surat.keterangan_lain') }}</textarea>
+                                </div>
                             </div>
 
                             <div class="md:col-span-2 flex justify-end">
@@ -283,6 +336,7 @@
                                     <th class="py-3 pr-4">Jenis Surat</th>
                                     <th class="py-3 pr-4">Status</th>
                                     <th class="py-3">Keterangan</th>
+                                    <th class="py-3 pl-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -296,10 +350,17 @@
                                             </span>
                                         </td>
                                         <td class="py-3">{{ $item->keterangan ?: '-' }}</td>
+                                        <td class="py-3 pl-4 text-right whitespace-nowrap">
+                                            @if($item->status === 'Disetujui')
+                                                <a href="{{ route('masyarakat.pengajuan-surat.preview', $item->id) }}" target="_blank" class="text-sm px-3 py-1.5 rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50">Preview</a>
+                                            @else
+                                                <span class="text-sm text-gray-400">Belum tersedia</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-6 text-center text-gray-500">Belum ada data pengajuan surat.</td>
+                                        <td colspan="5" class="py-6 text-center text-gray-500">Belum ada data pengajuan surat.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -578,6 +639,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             const menuItems = document.querySelectorAll('.menu-side-item');
             const sections = document.querySelectorAll('.masyarakat-section');
+            const jenisSuratEl = document.getElementById('jenis_surat');
+            const formDomisiliFields = document.getElementById('form-domisili-fields');
 
             const showSection = (targetId) => {
                 sections.forEach((section) => section.classList.add('hidden'));
@@ -591,6 +654,23 @@
                     item.classList.toggle('hover:bg-gray-800', !isActive);
                 });
             };
+
+            const jenisSuratBertemplate = ['Surat Keterangan Domisili', 'Surat Keterangan Usaha'];
+
+            const toggleDomisiliFields = () => {
+                if (!jenisSuratEl || !formDomisiliFields) return;
+
+                const isSuratBertemplate = jenisSuratBertemplate.includes(jenisSuratEl.value);
+                formDomisiliFields.classList.toggle('hidden', !isSuratBertemplate);
+                formDomisiliFields.querySelectorAll('input, select, textarea').forEach((field) => {
+                    field.disabled = !isSuratBertemplate;
+                });
+            };
+
+            if (jenisSuratEl) {
+                jenisSuratEl.addEventListener('change', toggleDomisiliFields);
+                toggleDomisiliFields();
+            }
 
             menuItems.forEach((item) => {
                 item.addEventListener('click', () => showSection(item.dataset.target));
@@ -761,4 +841,3 @@
         });
     </script>
 </x-app-layout>
-

@@ -22,9 +22,9 @@ class PendudukImport implements ToCollection, WithStartRow
         foreach ($rows as $row) {
             $r = $row->toArray();
 
-            $dusun = trim((string)($r[2] ?? ''));
+            $dusun = (string) ($this->cleanText($r[2] ?? null) ?? '');
             $nik = $this->sanitizeNik($r[7] ?? null);
-            $nama = trim((string)($r[8] ?? ''));
+            $nama = (string) ($this->cleanText($r[8] ?? null) ?? '');
 
             if ($dusun === '' && $nik === null && $nama === '') {
                 continue; // skip baris kosong
@@ -35,12 +35,13 @@ class PendudukImport implements ToCollection, WithStartRow
             }
 
             $payload = [
-                'rw' => (string)intval($r[0] ?? 0),
-                'rt' => (string)intval($r[1] ?? 0),
+                'rw' => $this->cleanText($r[0] ?? null) ?? '0',
+                'rt' => $this->cleanText($r[1] ?? null) ?? '0',
                 'dusun' => $dusun,
                 'alamat' => $this->cleanText($r[3] ?? null),
                 'kode_keluarga' => $this->cleanText($r[4] ?? null),
                 'nama_kepala_keluarga' => $this->cleanText($r[5] ?? null),
+                'no' => $this->normalizeNo($r[6] ?? null),
                 'nik' => $nik,
                 'nama' => $nama !== '' ? $nama : '-',
                 'jk' => $this->normalizeJk($r[9] ?? null),
@@ -56,6 +57,7 @@ class PendudukImport implements ToCollection, WithStartRow
                 'pendidikan' => $this->cleanText($r[19] ?? null),
                 'pekerjaan' => $this->cleanText($r[20] ?? null),
                 'is_active' => $this->normalizeActive($r[21] ?? null),
+                'keterangan_nonaktif' => $this->inactiveNote($r[21] ?? null, $r[22] ?? null),
             ];
 
             if ($nik !== null) {
@@ -71,8 +73,21 @@ class PendudukImport implements ToCollection, WithStartRow
 
     private function cleanText($value): ?string
     {
-        $text = trim((string)$value);
+        $text = (string) $value;
+        $text = str_replace(["\u{FFFD}", 'ï¿½', 'Â'], '', $text);
+        $text = preg_replace('/[^\PC\s]/u', '', $text) ?? $text;
+        $text = trim(preg_replace('/\s+/', ' ', $text) ?? $text);
         return $text === '' ? null : $text;
+    }
+
+    private function normalizeNo($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', (string) $value) ?? '';
+        return $digits !== '' ? (int) $digits : null;
     }
 
     private function sanitizeNik($value): ?string
@@ -120,10 +135,19 @@ class PendudukImport implements ToCollection, WithStartRow
     private function normalizeActive($value): int
     {
         $v = strtolower(trim((string)$value));
-        if ($v === '' || $v === '1' || $v === 'aktif' || $v === 'true' || $v === 'ya') {
+        if ($v === '' || $v === '1' || $v === 'aktif' || $v === 'true' || $v === 'ya' || $v === 'y') {
             return 1;
         }
         return 0;
+    }
+
+    private function inactiveNote($activeValue, $noteValue): ?string
+    {
+        if ($this->normalizeActive($activeValue) === 1) {
+            return null;
+        }
+
+        return $this->cleanText($noteValue) ?? 'Tidak aktif berdasarkan data import.';
     }
 
     private function parseTanggal($value): ?string
