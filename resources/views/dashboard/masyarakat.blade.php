@@ -501,6 +501,29 @@
 
                 <section id="section-status-pengaduan" class="masyarakat-section hidden">
                     <div class="bg-white rounded-3xl shadow p-6 border border-gray-100 overflow-x-auto">
+                        @if (session('success_pengaduan'))
+                            <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                                {{ session('success_pengaduan') }}
+                            </div>
+                        @endif
+
+                        @if (session('error_pengaduan'))
+                            <div class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                                {{ session('error_pengaduan') }}
+                            </div>
+                        @endif
+
+                        @if ($errors->edit_pengaduan->any())
+                            <div class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                                <p class="font-medium">Data edit pengaduan belum lengkap:</p>
+                                <ul class="mt-1 list-disc pl-5">
+                                    @foreach ($errors->edit_pengaduan->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                             <h3 class="text-xl font-semibold text-gray-800">Status Pengaduan</h3>
                             <div class="flex items-center gap-2">
@@ -566,14 +589,25 @@
                                             </span>
                                         </td>
                                         <td class="py-3">{{ \Illuminate\Support\Str::limit(strip_tags($item->catatan_admin ?: '-'), 80) }}</td>
-                                        <td class="py-3 pl-4 text-right">
-                                            <button
-                                                type="button"
-                                                class="btn-detail-pengaduan text-sm px-3 py-1.5 rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50"
-                                                data-id="{{ $item->id }}"
-                                            >
-                                                Detail
-                                            </button>
+                                        <td class="py-3 pl-4">
+                                            <div class="flex justify-end gap-2">
+                                                @if ($item->status === \App\Models\Pengaduan::STATUS_BARU)
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit-pengaduan text-sm px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50"
+                                                        data-id="{{ $item->id }}"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                @endif
+                                                <button
+                                                    type="button"
+                                                    class="btn-detail-pengaduan text-sm px-3 py-1.5 rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50"
+                                                    data-id="{{ $item->id }}"
+                                                >
+                                                    Detail
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -589,6 +623,75 @@
                     </div>
                 </section>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-pengaduan" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40" data-close-edit-pengaduan></div>
+        <div class="relative mx-auto mt-6 w-[95%] max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h4 class="text-lg font-semibold text-gray-800">Edit Pengaduan</h4>
+                <button type="button" class="text-gray-500 hover:text-gray-700" data-close-edit-pengaduan>×</button>
+            </div>
+            <form id="form-edit-pengaduan" method="POST" action="#" enctype="multipart/form-data" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 max-h-[75vh] overflow-y-auto">
+                @csrf
+                @method('PUT')
+
+                <div>
+                    <label for="edit_nama_pelapor" class="block text-sm font-medium text-gray-700">Nama Pelapor</label>
+                    <input id="edit_nama_pelapor" name="nama_pelapor" type="text" required class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                </div>
+
+                <div>
+                    <label for="edit_nik_pengaduan" class="block text-sm font-medium text-gray-700">NIK</label>
+                    <input id="edit_nik_pengaduan" name="nik" type="text" required maxlength="20" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                </div>
+
+                <div>
+                    <label for="edit_no_hp_pengaduan" class="block text-sm font-medium text-gray-700">No. HP</label>
+                    <input id="edit_no_hp_pengaduan" name="no_hp" type="text" maxlength="20" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                </div>
+
+                <div>
+                    <label for="edit_kategori" class="block text-sm font-medium text-gray-700">Kategori Pengaduan</label>
+                    <select id="edit_kategori" name="kategori" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        <option value="">Pilih kategori (opsional)</option>
+                        @foreach (['Infrastruktur', 'Lingkungan', 'Keamanan', 'Pelayanan Publik', 'Sosial'] as $kategori)
+                            <option value="{{ $kategori }}">{{ $kategori }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="edit_judul" class="block text-sm font-medium text-gray-700">Judul Pengaduan</label>
+                    <input id="edit_judul" name="judul" type="text" required class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="edit_lokasi" class="block text-sm font-medium text-gray-700">Lokasi Kejadian</label>
+                    <input id="edit_lokasi" name="lokasi" type="text" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="edit_isi" class="block text-sm font-medium text-gray-700">Isi Pengaduan</label>
+                    <textarea id="edit_isi" name="isi" required rows="4" class="mt-2 w-full rounded-xl border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-sm"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="edit_foto" class="block text-sm font-medium text-gray-700">Ganti Foto Bukti (Opsional)</label>
+                    <input id="edit_foto" name="foto" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="mt-2 block w-full text-sm text-gray-700 file:mr-4 file:rounded-xl file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:font-medium file:text-orange-700 hover:file:bg-orange-200">
+                    <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ingin mengganti foto. Format maksimal 2MB.</p>
+                </div>
+
+                <div class="md:col-span-2 flex justify-end gap-3 pt-2">
+                    <button type="button" data-close-edit-pengaduan class="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-600 text-white text-sm font-medium hover:bg-orange-700">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -726,6 +829,9 @@
                 });
             }
 
+            const modalEdit = document.getElementById('modal-edit-pengaduan');
+            const formEditPengaduan = document.getElementById('form-edit-pengaduan');
+            const closeEditButtons = document.querySelectorAll('[data-close-edit-pengaduan]');
             const modalDetail = document.getElementById('modal-detail-pengaduan');
             const closeModalButtons = document.querySelectorAll('[data-close-detail-pengaduan]');
 
@@ -761,6 +867,19 @@
                 if (el) el.textContent = value || '-';
             };
 
+            const setInputValue = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value || '';
+            };
+
+            const showEditModal = () => {
+                if (modalEdit) modalEdit.classList.remove('hidden');
+            };
+
+            const hideEditModal = () => {
+                if (modalEdit) modalEdit.classList.add('hidden');
+            };
+
             const showModal = () => {
                 if (modalDetail) modalDetail.classList.remove('hidden');
             };
@@ -771,6 +890,41 @@
 
             closeModalButtons.forEach((btn) => {
                 btn.addEventListener('click', hideModal);
+            });
+
+            closeEditButtons.forEach((btn) => {
+                btn.addEventListener('click', hideEditModal);
+            });
+
+            document.querySelectorAll('.btn-edit-pengaduan').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    if (!id || !formEditPengaduan) return;
+
+                    formEditPengaduan.action = `{{ url('/dashboard/masyarakat/pengaduan') }}/${id}`;
+                    setInputValue('edit_judul', 'Memuat...');
+                    showEditModal();
+
+                    try {
+                        const response = await fetch(`{{ url('/dashboard/masyarakat/pengaduan') }}/${id}`);
+                        if (!response.ok) {
+                            throw new Error('Gagal memuat data pengaduan.');
+                        }
+
+                        const data = await response.json();
+                        setInputValue('edit_nama_pelapor', data.nama_pelapor);
+                        setInputValue('edit_nik_pengaduan', data.nik);
+                        setInputValue('edit_no_hp_pengaduan', data.no_hp);
+                        setInputValue('edit_kategori', data.kategori);
+                        setInputValue('edit_judul', data.judul);
+                        setInputValue('edit_lokasi', data.lokasi);
+                        setInputValue('edit_isi', data.isi);
+                        setInputValue('edit_foto', '');
+                    } catch (error) {
+                        setInputValue('edit_judul', 'Gagal memuat data');
+                        setInputValue('edit_isi', 'Terjadi kesalahan saat mengambil data pengaduan.');
+                    }
+                });
             });
 
             document.querySelectorAll('.btn-detail-pengaduan').forEach((btn) => {
@@ -828,8 +982,11 @@
             const allowedTabs = ['beranda', 'pengajuan', 'status-surat', 'pengaduan', 'status-pengaduan'];
             const hasValidationErrors = {{ $errors->any() ? 'true' : 'false' }};
             const hasPengaduanErrors = {{ $errors->pengaduan->any() ? 'true' : 'false' }};
+            const hasEditPengaduanErrors = {{ $errors->edit_pengaduan->any() ? 'true' : 'false' }};
 
-            if (hasPengaduanErrors) {
+            if (hasEditPengaduanErrors) {
+                showSection('status-pengaduan');
+            } else if (hasPengaduanErrors) {
                 showSection('pengaduan');
             } else if (hasValidationErrors) {
                 showSection('pengajuan');

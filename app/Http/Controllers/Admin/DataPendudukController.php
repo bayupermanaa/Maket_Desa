@@ -34,9 +34,31 @@ class DataPendudukController extends Controller
         ]);
 
         try {
-            Excel::import(new PendudukImport(), $request->file('file'));
+            $import = new PendudukImport();
+            Excel::import($import, $request->file('file'));
 
-            return redirect()->back()->with('success', 'Data penduduk berhasil diimpor!');
+            $message = 'Data penduduk berhasil diimpor. Data baru: ' . $import->importedCount() . '.';
+
+            $duplicateMessages = [];
+            if ($import->skippedExistingNikCount() > 0) {
+                $duplicateMessages[] = $import->skippedExistingNikCount() . ' NIK sudah ada di database';
+            }
+            if ($import->skippedDuplicateFileNikCount() > 0) {
+                $duplicateMessages[] = $import->skippedDuplicateFileNikCount() . ' NIK dobel di file Excel';
+            }
+
+            if ($duplicateMessages !== []) {
+                $message .= ' Dilewati: ' . implode(', ', $duplicateMessages) . '.';
+            }
+
+            return redirect()->back()
+                ->with('success', $message)
+                ->with('import_duplicate_summary', [
+                    'existing_count' => $import->skippedExistingNikCount(),
+                    'file_duplicate_count' => $import->skippedDuplicateFileNikCount(),
+                    'existing_niks' => array_slice($import->skippedExistingNiks(), 0, 10),
+                    'file_duplicate_niks' => array_slice($import->skippedDuplicateFileNiks(), 0, 10),
+                ]);
         } catch (\Exception $e) {
             \Log::error('Import penduduk gagal', [
                 'message' => $e->getMessage(),

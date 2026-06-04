@@ -140,6 +140,9 @@ Route::get('/dashboard/masyarakat/pengajuan-surat/{id}/preview', [PengajuanSurat
 Route::post('/dashboard/masyarakat/pengaduan', [MasyarakatPengaduanController::class, 'storeMasyarakat'])
     ->middleware('auth')
     ->name('masyarakat.pengaduan.store');
+Route::put('/dashboard/masyarakat/pengaduan/{id}', [MasyarakatPengaduanController::class, 'updateMasyarakat'])
+    ->middleware('auth')
+    ->name('masyarakat.pengaduan.update');
 Route::get('/dashboard/masyarakat/pengaduan/{id}', [MasyarakatPengaduanController::class, 'showMasyarakat'])
     ->middleware('auth')
     ->name('masyarakat.pengaduan.show');

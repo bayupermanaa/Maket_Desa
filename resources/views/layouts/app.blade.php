@@ -5,7 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ isset($title) ? $title : config('app.name', 'Maket Desa') }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
         <style>[x-cloak]{display:none !important;}</style>
 
         <!-- Fonts -->
@@ -32,6 +34,10 @@
             <main>
                 {{ $slot }}
             </main>
+
+            <footer class="border-t border-gray-200 bg-white px-6 py-4 text-center text-sm text-gray-500">
+                Hak Cipta &copy; {{ date('Y') }} Maket Desa. Semua hak cipta dilindungi.
+            </footer>
         </div>
         <x-popup-kebijakan />
     </body>

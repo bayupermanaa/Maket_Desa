@@ -12,6 +12,13 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class PendudukImport implements ToCollection, WithStartRow
 {
+    private int $importedCount = 0;
+    private int $skippedExistingNikCount = 0;
+    private int $skippedDuplicateFileNikCount = 0;
+    private array $skippedExistingNiks = [];
+    private array $skippedDuplicateFileNiks = [];
+    private array $seenNiks = [];
+
     public function startRow(): int
     {
         return 2; // row 1 adalah header
@@ -60,15 +67,53 @@ class PendudukImport implements ToCollection, WithStartRow
                 'keterangan_nonaktif' => $this->inactiveNote($r[21] ?? null, $r[22] ?? null),
             ];
 
+            if ($nik !== null && isset($this->seenNiks[$nik])) {
+                $this->skippedDuplicateFileNikCount++;
+                $this->skippedDuplicateFileNiks[] = $nik;
+                continue;
+            }
+
             if ($nik !== null) {
-                Penduduk::updateOrCreate(
-                    ['nik' => $nik],
-                    $payload
-                );
+                $this->seenNiks[$nik] = true;
+
+                if (Penduduk::where('nik', $nik)->exists()) {
+                    $this->skippedExistingNikCount++;
+                    $this->skippedExistingNiks[] = $nik;
+                    continue;
+                }
+
+                Penduduk::create($payload);
+                $this->importedCount++;
             } else {
                 Penduduk::create($payload);
+                $this->importedCount++;
             }
         }
+    }
+
+    public function importedCount(): int
+    {
+        return $this->importedCount;
+    }
+
+    public function skippedExistingNikCount(): int
+    {
+        return $this->skippedExistingNikCount;
+    }
+
+    public function skippedDuplicateFileNikCount(): int
+    {
+        return $this->skippedDuplicateFileNikCount;
+    }
+
+    public function skippedExistingNiks(): array
+    {
+        return array_values(array_unique($this->skippedExistingNiks));
+    }
+
+    public function skippedDuplicateFileNiks(): array
+    {
+        return array_values(array_unique($this->skippedDuplicateFileNiks));
     }
 
     private function cleanText($value): ?string

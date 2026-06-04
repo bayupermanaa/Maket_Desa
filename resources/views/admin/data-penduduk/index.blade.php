@@ -9,6 +9,48 @@
                 <h1 class="text-3xl font-semibold text-gray-900 mb-1">Data Penduduk</h1>
                 <p class="text-sm text-gray-600 mb-4">Total Data: {{ $penduduk->total() }}</p>
 
+                @if(session('success'))
+                    <div class="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @php
+                    $importDuplicateSummary = session('import_duplicate_summary');
+                @endphp
+
+                @if($importDuplicateSummary && (($importDuplicateSummary['existing_count'] ?? 0) > 0 || ($importDuplicateSummary['file_duplicate_count'] ?? 0) > 0))
+                    <div class="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+                        <p class="font-semibold">Ada NIK yang tidak diimpor agar data penduduk tidak dobel.</p>
+
+                        @if(($importDuplicateSummary['existing_count'] ?? 0) > 0)
+                            <p class="mt-1">
+                                {{ $importDuplicateSummary['existing_count'] }} NIK sudah ada di database:
+                                {{ implode(', ', $importDuplicateSummary['existing_niks'] ?? []) }}
+                                @if(($importDuplicateSummary['existing_count'] ?? 0) > count($importDuplicateSummary['existing_niks'] ?? []))
+                                    , dan lainnya
+                                @endif
+                            </p>
+                        @endif
+
+                        @if(($importDuplicateSummary['file_duplicate_count'] ?? 0) > 0)
+                            <p class="mt-1">
+                                {{ $importDuplicateSummary['file_duplicate_count'] }} NIK dobel di file Excel:
+                                {{ implode(', ', $importDuplicateSummary['file_duplicate_niks'] ?? []) }}
+                                @if(($importDuplicateSummary['file_duplicate_count'] ?? 0) > count($importDuplicateSummary['file_duplicate_niks'] ?? []))
+                                    , dan lainnya
+                                @endif
+                            </p>
+                        @endif
+                    </div>
+                @endif
+
                 <form method="GET" action="{{ route('admin.data-penduduk.index') }}" class="mb-4 flex flex-wrap items-center gap-2">
                     <select name="status_filter" class="border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white">
                         <option value="">Semua</option>
@@ -28,6 +70,22 @@
                 </form>
 
                 <script>
+                    @if($importDuplicateSummary && (($importDuplicateSummary['existing_count'] ?? 0) > 0 || ($importDuplicateSummary['file_duplicate_count'] ?? 0) > 0))
+                        const importDuplicateMessage = [
+                            'Import selesai, tetapi ada NIK yang dilewati agar data tidak dobel.',
+                            @if(($importDuplicateSummary['existing_count'] ?? 0) > 0)
+                                'NIK sudah ada di database: {{ $importDuplicateSummary['existing_count'] }}',
+                                'Contoh: {{ implode(', ', $importDuplicateSummary['existing_niks'] ?? []) }}',
+                            @endif
+                            @if(($importDuplicateSummary['file_duplicate_count'] ?? 0) > 0)
+                                'NIK dobel di file Excel: {{ $importDuplicateSummary['file_duplicate_count'] }}',
+                                'Contoh: {{ implode(', ', $importDuplicateSummary['file_duplicate_niks'] ?? []) }}',
+                            @endif
+                        ].filter(Boolean).join('\n');
+
+                        alert(importDuplicateMessage);
+                    @endif
+
                     document.getElementById('fileImport').addEventListener('change', function() {
                         document.getElementById('btnSubmitImport').click();
                     });
@@ -137,5 +195,4 @@
         </div>
     </div>
 </x-app-layout>
-
 
