@@ -165,7 +165,8 @@ class PengajuanSuratController extends Controller
      */
     public function create()
     {
-        return view('admin.pengajuan-surat.create');
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
+            ->with('info', 'Pengajuan surat baru dibuat melalui dashboard masyarakat.');
     }
 
     /**
@@ -371,8 +372,10 @@ class PengajuanSuratController extends Controller
      */
     public function edit($id)
     {
-        $surat = PengajuanSurat::findOrFail($id);
-        return view('admin.pengajuan-surat.edit', compact('surat'));
+        PengajuanSurat::findOrFail($id);
+
+        return redirect()->route($this->routePrefix() . '.pengajuan-surat.index')
+            ->with('info', 'Perubahan data pengajuan dilakukan dari detail pengajuan surat.');
     }
 
     /**

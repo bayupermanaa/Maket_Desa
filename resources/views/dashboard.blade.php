@@ -226,7 +226,7 @@
                 <!-- Kepala Desa -->
                 <div class="lg:col-span-4">
                     @php
-                        $fotoKades = asset('images/default-kepala-desa.jpeg');
+                        $fotoKades = asset('images/logo.png');
                         if (!empty($data->kepala_desa_foto)) {
                             if (\Illuminate\Support\Str::startsWith($data->kepala_desa_foto, ['http://', 'https://'])) {
                                 $fotoKades = $data->kepala_desa_foto;
