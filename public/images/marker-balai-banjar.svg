@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="44" height="56" viewBox="0 0 44 56" fill="none">
+  <defs>
+    <filter id="s" x="0" y="0" width="44" height="56" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <g filter="url(#s)">
+    <path d="M22 53C22 53 38 36.8 38 24.8C38 14.42 30.84 7 22 7C13.16 7 6 14.42 6 24.8C6 36.8 22 53 22 53Z" fill="#B91C1C"/>
+    <circle cx="22" cy="24" r="11" fill="#FEE2E2"/>
+    <path d="M15 27V21.8L22 17L29 21.8V27" stroke="#7F1D1D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M18 27V23H26V27" stroke="#7F1D1D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 23V27" stroke="#7F1D1D" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+</svg>
